@@ -1,0 +1,68 @@
+# JetBrains IDEs
+.idea/
+
+# Python
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+*.so
+*.egg
+*.egg-info/
+dist/
+build/
+.eggs/
+*.log
+
+# Environments
+.env
+.venv/
+venv/
+ENV/
+env.bak/
+env/
+
+# Jupyter Notebooks
+.ipynb_checkpoints/
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# VS Code
+.vscode/
+
+# Test and coverage
+htmlcov/
+.tox/
+.nox/
+coverage.*
+.cache
+pytest_cache/
+*.cover
+*.pyc
+
+# MyPy
+.mypy_cache/
+
+# Logs and backups
+*.log
+*.bak
+*.swp
+*~
+
+# Compiled files
+*.out
+*.o
+
+# Notebooks or temp exports
+*.nbconvert.ipynb
+
+# Git
+*.orig
+*.rej
+*.swo
+*.swn
+
+# Other user-defined local folders
+local_settings.py
