@@ -30,18 +30,36 @@ print(metadata_df.columns)
 # Create manually the objects for the CPT CPTU01 in bavois
 cpt = GefCpt()
 
-
-cpt.tip = cpt_bavois['CPTU01']['qc']
 cpt.penetration_length = cpt_bavois['CPTU01']['z']
+cpt.depth = cpt_bavois['CPTU01']['z']
+cpt.tip = cpt_bavois['CPTU01']['qc']
+cpt.friction = cpt_bavois['CPTU01']['fs']
+cpt.pore_pressure_u2 = cpt_bavois['CPTU01']['u2']
+cpt.friction_nbr = cpt_bavois['CPTU01']['|Rf|']
+
 
 # Get the row that contains the information for CPTU01 and bavois
 row = metadata_df.query("site == 'bavois' and name == 'CPTU01'")
-cpt.local_reference_level = row["elev_cpt"].squeeze() if not row.empty else None
+# Fill other attributes from the metadata
+cpt.name = f"{row['name'].item()}_{row['site'].item()}" if not row.empty else None
+cpt.a = row["a"].item() if not row.empty else None
+cpt.coordinates = [row["E"].item(), row["N"].item()] if not row.empty else [None, None]
+cpt.local_reference_level = -row["elev_cpt"].item() if not row.empty else None
+
+
+
+# cpt = GefCpt()
+# cpt.read(random_cpt_path)
+#
+#
+#
+
 
 
 cpt.pre_process_data()
 
 
+print(cpt)
 
 #
 # # Loop over each CPT and generate plots
