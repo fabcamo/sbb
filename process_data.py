@@ -58,10 +58,11 @@ def create_cpt_object(cpt_name: str, cpt_dict: dict, metadata_df: pd.DataFrame, 
     return cpt
 
 
-def process_cpt_dict(cpt_dict: dict, metadata_df: pd.DataFrame, site_name: str) -> list:
+def initialize_cpt_objects(cpt_dict: dict, metadata_df: pd.DataFrame, site_name: str) -> list:
     cpt_objects = []
     for cpt_name in cpt_dict:
         try:
+
             cpt_obj = create_cpt_object(cpt_name, cpt_dict, metadata_df, site_name)
             cpt_objects.append(cpt_obj)
         except Exception as e:
@@ -69,8 +70,28 @@ def process_cpt_dict(cpt_dict: dict, metadata_df: pd.DataFrame, site_name: str) 
     return cpt_objects
 
 
-cpt_bavois_list = process_cpt_dict(cpt_bavois, metadata_df, site_name="bavois")
-cpt_chavornay_list = process_cpt_dict(cpt_chavornay, metadata_df, site_name="chavornay")
+cpt_bavois_list = initialize_cpt_objects(cpt_bavois, metadata_df, site_name="bavois")
+cpt_chavornay_list = initialize_cpt_objects(cpt_chavornay, metadata_df, site_name="chavornay")
+
+
+print(cpt_bavois_list)
+
+
+
+
+
+# Define the DGeoLib+ interpreter conditions
+interpreter = RobertsonCptInterpretation()
+interpreter.unitweightmethod = UnitWeightMethod.LENGKEEK2022
+interpreter.shearwavevelocitymethod = ShearWaveVelocityMethod.ZANG
+interpreter.ocrmethod = OCRMethod.MAYNE
+interpreter.user_defined_water_level = False
+
+for cpt in cpt_bavois_list:
+    # pre-process the CPT
+    cpt.pre_process_data()
+    # Interpret the CPT
+    cpt.interpret_cpt(interpreter)
 
 
 print(cpt_bavois_list)
