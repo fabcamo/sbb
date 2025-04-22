@@ -50,11 +50,13 @@ def create_cpt_object(cpt_name: str, cpt_dict: dict, metadata_df: pd.DataFrame, 
         cpt.a = row["a"].item()
         cpt.coordinates = [row["E"].item(), row["N"].item()]
         cpt.local_reference_level = row["elev_cpt"].item()
+        cpt.pwp = row["gwl_reports"].item()
     else:
         cpt.name = cpt_name
         cpt.coordinates = [None, None]
         cpt.local_reference_level = None
         cpt.a = None
+        cpt.pwp = None
 
     return cpt
 
@@ -89,15 +91,12 @@ interpreter.ocrmethod = OCRMethod.MAYNE
 interpreter.user_defined_water_level = True
 
 for cpt in cpt_bavois_list:
-    # Add the pwp level
-    cpt.pwp = 435
-
     # pre-process the CPT
     cpt.pre_process_data()
-    # Interpret the CPT
     cpt.interpret_cpt(interpreter)
 
 
+    # Interpret the CPT
 print(cpt_bavois_list)
 
 
