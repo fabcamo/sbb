@@ -1,6 +1,7 @@
 import pickle
 import pandas as pd
 import matplotlib.pyplot as plt
+import numpy as np
 
 from geolib_plus.gef_cpt import GefCpt
 from geolib_plus.robertson_cpt_interpretation import RobertsonCptInterpretation
@@ -48,7 +49,7 @@ def create_cpt_object(cpt_name: str, cpt_dict: dict, metadata_df: pd.DataFrame, 
         cpt.name = f"{row['name'].item()}_{row['site'].item()}"
         cpt.a = row["a"].item()
         cpt.coordinates = [row["E"].item(), row["N"].item()]
-        cpt.local_reference_level = -row["elev_cpt"].item()
+        cpt.local_reference_level = row["elev_cpt"].item()
     else:
         cpt.name = cpt_name
         cpt.coordinates = [None, None]
@@ -85,9 +86,12 @@ interpreter = RobertsonCptInterpretation()
 interpreter.unitweightmethod = UnitWeightMethod.LENGKEEK2022
 interpreter.shearwavevelocitymethod = ShearWaveVelocityMethod.ZANG
 interpreter.ocrmethod = OCRMethod.MAYNE
-interpreter.user_defined_water_level = False
+interpreter.user_defined_water_level = True
 
 for cpt in cpt_bavois_list:
+    # Add the pwp level
+    cpt.pwp = 435
+
     # pre-process the CPT
     cpt.pre_process_data()
     # Interpret the CPT
@@ -98,8 +102,25 @@ print(cpt_bavois_list)
 
 
 
+cpt = cpt_bavois_list[0]  # Select the first CPT for demonstration
+
+# Plot in the same space the effective stress and total stress in x vs depth in y
+plt.figure(figsize=(5, 10))
+plt.plot(cpt.effective_stress, cpt.depth, label='Effective Stress', color='darkred')
+plt.plot(cpt.total_stress, cpt.depth, label='Total Stress', color='black')
+plt.plot(cpt.hydro_pore_pressure, cpt.depth, label='Pore Pressure', color='darkblue')
+#plt.plot(cpt.pore_pressure_u2*1000, cpt.depth, label='Pore Pressure U2', alpha=0.4, color='grey')
+plt.xlabel('Stress (kPa)')
+plt.ylabel('Depth NAP (m)')
+plt.title(f'Total and effective stress - CPT{cpt.name}')
+plt.legend()
+plt.grid(True)
+plt.gca().invert_yaxis()  # Invert y-axis to have depth increasing downwards
 
 
+
+
+plt.show()
 
 
 
