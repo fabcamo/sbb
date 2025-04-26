@@ -73,6 +73,66 @@ def initialize_cpt_objects(cpt_dict: dict, metadata_df: pd.DataFrame, site_name:
     return cpt_objects
 
 
+def calc_qn(cpt: GefCpt) -> np.ndarray:
+    """
+    Calculate the qn value based on the CPT data.
+
+    params:
+        cpt (GefCpt): The CPT object with the interpreted data.
+
+    returns:
+        np.ndarray: The calculated qn value.
+    """
+    # Calculate qn
+    qn = (cpt.qt - cpt.total_stress)
+    # Set negative values to 0
+    qn[qn < 0] = 0
+
+    return qn
+
+def calc_Bq(cpt: GefCpt) -> np.ndarray:
+    """
+    Calculate the Bq value based on the CPT data.
+
+    params:
+        cpt (GefCpt): The CPT object with the interpreted data.
+
+    returns:
+        np.ndarray: The calculated Bq value.
+    """
+    # Calculate Bq
+    # Remember to multiply by 1000 to convert from MPa to kPa
+    Bq = (cpt.pore_pressure_u2*1000 - cpt.hydro_pore_pressure) / calc_qn(cpt)
+
+    return Bq
+
+
+def calc_psi(cpt: GefCpt, Bq) -> float:
+    """
+    Calculate the psi value based on the CPT data. Based on Schnaid ISC6 (2021).
+
+    params:
+        cpt (GefCpt): The CPT object with the interpreted data.
+
+    returns:
+        float: The calculated psi value.
+    """
+    # Auxiliary equations
+    lmbda = cpt.Fr / 10
+    m = 11.9 + 13.3 * lmbda
+    phi = np.arctan(0.1 + 0.38 * np.log10((cpt.qt/1000) / cpt.effective_stress))  # in radians
+    M_cssm = (6 * np.sin(phi)) / (3 - np.sin(phi))
+    k = (3 + (0.85/lmbda)) * M_cssm
+    Qp = ((cpt.qt/1000 - cpt.total_stress)/ cpt.effective_stress) * (1 - Bq)
+
+    # Calculate psi
+    psi = (-np.log(Qp/k)) / m
+
+    return psi
+
+
+
+
 def save_results_as_csv(cpt, cpt_dict, results_path):
     """
     After manually populating the CPT object, pre-procesing and interpreting the data, this function
@@ -88,12 +148,8 @@ def save_results_as_csv(cpt, cpt_dict, results_path):
     """
 
     cpt_key = cpt.name.split("_")[0]  # Extract CPTU01 from CPTU01_bavois
-    qn = (cpt.qt - cpt.effective_stress)/1000
-    # if any number inside the qn array is negative, set it to 0
-    qn[qn < 0] = 0
 
-    Bq = (cpt.pore_pressure_u2 - cpt.hydro_pore_pressure / 1000) / (cpt.qt / 1000 - cpt.effective_stress / 1000)
-    Nkt_a = 10.5 + 7 * np.log(cpt.Fr)
+    Nkt_a = 10.5 + 7 * np.log10(cpt.Fr)
     Nkt_b = 10.5 - 4.6 * np.log(Bq + 0.1)
 
 
@@ -102,24 +158,23 @@ def save_results_as_csv(cpt, cpt_dict, results_path):
         'Depth* (m)': cpt.depth,
         'Depth to reference level (m)': cpt.depth_to_reference,
 
-        'qc* (MPa)': cpt.tip,
-        'fs* (MPa)': cpt.friction,
+        'qc* (kPa)': cpt.tip,
+        'fs* (kPa)': cpt.friction,
         'Rf* (%)': cpt.friction_nbr,
         'Fr (%)': cpt.Fr,
 
-        'PWP u2* (MPa)': cpt.pore_pressure_u2,
-        'PWP u0 (MPa)': cpt.hydro_pore_pressure/1000,
+        'PWP u2* (kPa)': cpt.pore_pressure_u2*1000,
+        'PWP u0 (kPa)': cpt.hydro_pore_pressure,
 
         'Effective Stress (kPa)': cpt.effective_stress,
         'Total Stress (kPa)': cpt.total_stress,
 
-        'qt (MPa)': cpt.qt/1000,
-        'qn (MPa)': qn,
-        'Qtn (MPa)': cpt.Qtn/1000,
+        'qt (kPa)': cpt.qt,
+        'qn (kPa)': calc_qn(cpt),
+        'Qtn (kPa)': cpt.Qtn,
 
         'Bq* (MPa)': cpt_dict.get(cpt_key, {}).get('Bq', np.nan),
-
-        'Bq (MPa)': Bq,
+        'Bq (MPa)': calc_Bq(cpt),
 
         'E0 (MPa)': cpt.E0,
         'G0 (MPa)': cpt.G0,
@@ -135,7 +190,9 @@ def save_results_as_csv(cpt, cpt_dict, results_path):
         'Nkt_b': Nkt_b,
 
         'St* (-):': cpt_dict.get(cpt_key, {}).get('St', np.nan),
-        'St (-)': ((cpt.qt - cpt.total_stress)/Nkt_a)*(1/cpt.friction/1000)
+        'St (-)': ((cpt.qt - cpt.total_stress)/Nkt_a)*(1/cpt.friction/1000),
+
+        'psi (-)': calc_psi(cpt, Bq)
 
     }
     interpreted_df = pd.DataFrame(interpreted_data)
