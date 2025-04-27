@@ -90,6 +90,7 @@ def calc_qn(cpt: GefCpt) -> np.ndarray:
 
     return qn
 
+
 def calc_Bq(cpt: GefCpt) -> np.ndarray:
     """
     Calculate the Bq value based on the CPT data.
@@ -102,35 +103,114 @@ def calc_Bq(cpt: GefCpt) -> np.ndarray:
     """
     # Calculate Bq
     # Remember to multiply by 1000 to convert from MPa to kPa
-    Bq = (cpt.pore_pressure_u2*1000 - cpt.hydro_pore_pressure) / calc_qn(cpt)
-
+    qn = calc_qn(cpt)
+    qn_safe = np.maximum(qn, 1e-6)  # Avoid division by zero
+    Bq = (cpt.pore_pressure_u2 * 1000 - cpt.hydro_pore_pressure) / qn_safe
     return Bq
 
 
-def calc_psi(cpt: GefCpt, Bq) -> float:
+def calc_Nkt(cpt: GefCpt) -> float:
     """
-    Calculate the psi value based on the CPT data. Based on Schnaid ISC6 (2021).
+    Calculate Nkt based on Fr and Bq according to Robertson (2012) and Mayne & Peuchen (2022).
+
+    Params:
+        cpt (GefCpt): The CPT object with the interpreted data.
+
+    Returns:
+        Nkt_Fr (float): The calculated Nkt value based on Fr.
+        Nkt_Bq (float): The calculated Nkt value based on Bq.
+    """
+    # 1. Calculate Nkt based on Fr (Robertson, 2012)
+    # Make sure Fr is not zero or negative for log calculation
+    Fr_safe = np.where(cpt.Fr <= 0, 0.01, cpt.Fr)  # Avoid log(0)
+    Nkt_Fr = 10.5 + 7 * np.log10(Fr_safe)
+
+    # 2. Calculate Nkt based on Bq (Mayne and Peuchen, 2022)
+    # You need to calculate Bq first if it's not given
+    Bq = calc_Bq(cpt)
+    # Make sure Bq is not negative or zero for log
+    Bq_safe = np.where(Bq + 0.1 <= 0, 0.01, Bq + 0.1)
+    Nkt_Bq = 10.5 - 4.6 * np.log(Bq_safe)
+
+    return Nkt_Fr, Nkt_Bq
+
+
+def calc_Su(cpt: GefCpt, Nkt) -> float:
+    """
+    Calculate the undrained shear strength (Su) based on the Nkt and the cpt data.
 
     params:
         cpt (GefCpt): The CPT object with the interpreted data.
+        Nkt (float): The Nkt value.
 
     returns:
-        float: The calculated psi value.
+        Su (float): The calculated undrained shear strength.
     """
-    # Auxiliary equations
-    lmbda = cpt.Fr / 10
-    m = 11.9 + 13.3 * lmbda
-    phi = np.arctan(0.1 + 0.38 * np.log10((cpt.qt/1000) / cpt.effective_stress))  # in radians
-    M_cssm = (6 * np.sin(phi)) / (3 - np.sin(phi))
-    k = (3 + (0.85/lmbda)) * M_cssm
-    Qp = ((cpt.qt/1000 - cpt.total_stress)/ cpt.effective_stress) * (1 - Bq)
+    # Calculate Su
+    Su = calc_qn(cpt) / Nkt
 
-    # Calculate psi
-    psi = (-np.log(Qp/k)) / m
+    return Su
+
+def calc_St(cpt: GefCpt, Nkt) -> np.ndarray:
+    """
+    Correct calculation of Sensitivity-St using dynamic Nkt and fs.
+
+    Params:
+        cpt (GefCpt): The CPT object with the interpreted data.
+        Nkt (array or scalar): Calculated Nkt.
+
+    Returns:
+        np.ndarray: Sensitivity values.
+    """
+    qn = calc_qn(cpt)
+    fs = np.maximum(cpt.friction, 1e-6)  # Avoid zero or very small fs
+    with np.errstate(divide='ignore', invalid='ignore'):
+        St = qn / (Nkt * fs)
+
+    return St
+
+
+def calc_psi(cpt):
+    """
+    Calculate the Psi (state parameter) for liquefaction assessment from CPTu data.
+
+    Params:
+        cpt: CPT object with necessary attributes (qt, friction_nbr (Fr), total_stress, effective_stress, pore_pressure_u2, hydro_pore_pressure).
+
+    Returns:
+        psi: Array of Psi values (dimensionless).
+    """
+
+    # Safety: avoid division by zero later
+    epsilon = 1e-6
+
+    # Step 1: lambda from Fr (%)
+    Fr_safe = np.where(cpt.friction_nbr <= 0, epsilon, cpt.friction_nbr)
+    lambda_ = Fr_safe / 10
+
+    # Step 2: m from lambda
+    m = 11.9 + 13.3 * lambda_
+
+    # Step 3: Estimate phi' from qt and effective stress
+    qt_over_sigma_v_eff = np.where(cpt.effective_stress > epsilon, (cpt.qt / cpt.effective_stress), np.nan)
+    phi_deg = np.degrees(np.arctan(0.1 + 0.38 * np.log10(np.maximum(qt_over_sigma_v_eff, epsilon))))
+    phi_rad = np.radians(phi_deg)
+
+    # Step 4: M from phi
+    M = (6 * np.sin(phi_rad)) / (3 - np.sin(phi_rad))
+
+    # Step 5: k from lambda and M
+    k = (3 + (0.85 / np.maximum(lambda_, epsilon))) * M
+
+    # Step 6: Qp
+    Bq = calc_Bq(cpt)
+    Qp = ((cpt.qt - cpt.total_stress) / (cpt.effective_stress + epsilon)) * (1 - Bq)
+
+    # Step 7: Psi calculation
+    with np.errstate(divide='ignore', invalid='ignore'):
+        psi = -np.log(np.maximum(Qp / np.maximum(k, epsilon), epsilon)) / np.maximum(m, epsilon)
 
     return psi
-
-
 
 
 def save_results_as_csv(cpt, cpt_dict, results_path):
@@ -149,9 +229,10 @@ def save_results_as_csv(cpt, cpt_dict, results_path):
 
     cpt_key = cpt.name.split("_")[0]  # Extract CPTU01 from CPTU01_bavois
 
-    Nkt_a = 10.5 + 7 * np.log10(cpt.Fr)
-    Nkt_b = 10.5 - 4.6 * np.log(Bq + 0.1)
+    # Calculate Nkt values
+    Nkt_Fr, Nkt_Bq = calc_Nkt(cpt)
 
+    Nkt_prov = cpt_dict.get(cpt_key, {}).get('su', np.nan)
 
     # Create a DataFrame with the interpreted values
     interpreted_data = {
@@ -163,7 +244,7 @@ def save_results_as_csv(cpt, cpt_dict, results_path):
         'Rf* (%)': cpt.friction_nbr,
         'Fr (%)': cpt.Fr,
 
-        'PWP u2* (kPa)': cpt.pore_pressure_u2*1000,
+        'PWP u2* (kPa)': cpt.pore_pressure_u2 * 1000,
         'PWP u0 (kPa)': cpt.hydro_pore_pressure,
 
         'Effective Stress (kPa)': cpt.effective_stress,
@@ -173,32 +254,37 @@ def save_results_as_csv(cpt, cpt_dict, results_path):
         'qn (kPa)': calc_qn(cpt),
         'Qtn (kPa)': cpt.Qtn,
 
-        'Bq* (MPa)': cpt_dict.get(cpt_key, {}).get('Bq', np.nan),
-        'Bq (MPa)': calc_Bq(cpt),
+        'Bq provided (-)': cpt_dict.get(cpt_key, {}).get('Bq', np.nan),
+        'Bq calc (-)': calc_Bq(cpt),
+
+        'Nkt {Fr} (-)': Nkt_Fr,
+        'Nkt {Bq} (-)': Nkt_Bq,
+        'Su provided (kPa)': cpt_dict.get(cpt_key, {}).get('su', np.nan),
+        'Su {Fr} (kPa)': calc_Su(cpt, Nkt_Fr),
+        'Su {Bq} (kPa)': calc_Su(cpt, Nkt_Bq),
+
+        'St provided (-):': cpt_dict.get(cpt_key, {}).get('St', np.nan),
+        'St (Nkt Fr) (-)': calc_St(cpt, Nkt_Fr),
+        'St (Nkt Bq) (-)': calc_St(cpt, Nkt_Bq),
+
+        'psi (-)': calc_psi(cpt),
+        'psi dGeolib+ (-)': cpt.psi,
+
+        'Vs (m/s)': cpt.vs,
 
         'E0 (MPa)': cpt.E0,
         'G0 (MPa)': cpt.G0,
         'IC ': cpt.IC,
         'lithology': cpt.lithology,
         'poisson:': cpt.poisson,
-        'psi': cpt.psi,
         'relative density': cpt.relative_density,
         'rho (kg/m3)': cpt.rho,
-        'Vs (m/s)': cpt.vs,
 
-        'Nkt_a': Nkt_a,
-        'Nkt_b': Nkt_b,
-
-        'St* (-):': cpt_dict.get(cpt_key, {}).get('St', np.nan),
-        'St (-)': ((cpt.qt - cpt.total_stress)/Nkt_a)*(1/cpt.friction/1000),
-
-        'psi (-)': calc_psi(cpt, Bq)
 
     }
     interpreted_df = pd.DataFrame(interpreted_data)
     # Save the DataFrame as a CSV file
     interpreted_df.to_csv(f"{results_path}/{cpt.name}_interpreted.csv", index=False)
-
 
 
 # Load the pickle files with the CPT data
@@ -245,7 +331,6 @@ for cpt in cpt_bavois_list:
     # Save the results as a CSV file
     save_results_as_csv(cpt, cpt_bavois, results_path)
 
-
 for cpt in cpt_chavornay_list:
     # pre-process the CPT
     cpt.pre_process_data()
@@ -255,23 +340,6 @@ for cpt in cpt_ependes_list:
     # pre-process the CPT
     cpt.pre_process_data()
     cpt.interpret_cpt(interpreter)
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 # cpt = cpt_chavornay_list[1]  # Select the first CPT for demonstration
 #
