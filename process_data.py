@@ -288,6 +288,21 @@ def L24R10_lithology(cpt, polygons):
     return classifications
 
 
+def calc_IB(cpt):
+    """
+    Calculate the IB index based on the CPT data.
+
+    Params:
+        cpt (GefCpt): The CPT object with the interpreted data.
+
+    Returns:
+        IB (float): The calculated IB index.
+    """
+    # Calculate IB
+    IB = (100*(cpt.Qtn + 10)) / (70 + (cpt.Qtn + cpt.Fr))
+
+    return IB
+
 def save_results_as_csv(cpt, cpt_dict, results_path, vs_results, polygons_L24R10):
     """
     Save interpreted CPT results including Lengkeek 2024 lithology classification.
@@ -346,6 +361,7 @@ def save_results_as_csv(cpt, cpt_dict, results_path, vs_results, polygons_L24R10
         'Qtn [kPa]': cpt.Qtn,
 
         'IC ': cpt.IC,
+        'IB ': calc_IB(cpt),
         'lithology (Robertson)': cpt.lithology,
         'lithology (Lengkeek 2024)': lithology_L24R10,
 
@@ -439,7 +455,7 @@ for cpt in cpt_bavois_list:
     # 2. Now FINAL interpretation
     cpt.interpret_cpt(interpreter)
     # 3. Now save
-    #save_results_as_csv(cpt, cpt_bavois, r'c:\Users\camposmo\OneDrive - Stichting Deltares\Desktop\Geotechnical site investigations\results\bavois', vs_list, polygons_L24R10)
+    save_results_as_csv(cpt, cpt_bavois, r'c:\Users\camposmo\OneDrive - Stichting Deltares\Desktop\Geotechnical site investigations\results\bavois', vs_list, polygons_L24R10)
 
 for cpt in cpt_chavornay_list:
     # pre-process the CPT
@@ -450,7 +466,7 @@ for cpt in cpt_chavornay_list:
     # 2. Now FINAL interpretation
     cpt.interpret_cpt(interpreter)
     # 3. Now save
-    #save_results_as_csv(cpt, cpt_chavornay, r'c:\Users\camposmo\OneDrive - Stichting Deltares\Desktop\Geotechnical site investigations\results\bavois', vs_list, polygons_L24R10)
+    save_results_as_csv(cpt, cpt_chavornay, r'c:\Users\camposmo\OneDrive - Stichting Deltares\Desktop\Geotechnical site investigations\results\chavornay', vs_list, polygons_L24R10)
 
 
 for cpt in cpt_ependes_list:
@@ -461,7 +477,7 @@ for cpt in cpt_ependes_list:
     # 2. Now FINAL interpretation
     cpt.interpret_cpt(interpreter)
     # 3. Now save
-    #save_results_as_csv(cpt, cpt_ependes, r'c:\Users\camposmo\OneDrive - Stichting Deltares\Desktop\Geotechnical site investigations\results\bavois', vs_list, polygons_L24R10)
+    save_results_as_csv(cpt, cpt_ependes, r'c:\Users\camposmo\OneDrive - Stichting Deltares\Desktop\Geotechnical site investigations\results\ependes', vs_list, polygons_L24R10)
 
 import os
 import glob
