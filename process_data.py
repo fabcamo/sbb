@@ -432,7 +432,6 @@ interpreter.shearwavevelocitymethod = ShearWaveVelocityMethod.ZANG
 interpreter.ocrmethod = OCRMethod.MAYNE
 interpreter.user_defined_water_level = True
 
-lithologies_L24R10_bavois = []
 for cpt in cpt_bavois_list:
     cpt.pre_process_data()
     # 1. Calculate Vs first (safe copies)
@@ -440,160 +439,27 @@ for cpt in cpt_bavois_list:
     # 2. Now FINAL interpretation
     cpt.interpret_cpt(interpreter)
     # 3. Now save
-    save_results_as_csv(cpt, cpt_bavois, r'c:\Users\camposmo\OneDrive - Stichting Deltares\Desktop\Geotechnical site investigations\results\bavois', vs_list, polygons_L24R10)
-
-    lithology = L24R10_lithology(cpt, polygons_L24R10)
-    lithologies_L24R10_bavois.append(lithology)
+    #save_results_as_csv(cpt, cpt_bavois, r'c:\Users\camposmo\OneDrive - Stichting Deltares\Desktop\Geotechnical site investigations\results\bavois', vs_list, polygons_L24R10)
 
 for cpt in cpt_chavornay_list:
     # pre-process the CPT
     cpt.pre_process_data()
-    # Calculate Vs with 3 different methods
+    cpt.pre_process_data()
+    # 1. Calculate Vs first (safe copies)
     vs_list = calculate_vs_with_different_methods(cpt, interpreter)
-    # Save the results as a CSV file
-    # save_results_as_csv(cpt, cpt_chavornay, results_path, vs_list)
+    # 2. Now FINAL interpretation
+    cpt.interpret_cpt(interpreter)
+    # 3. Now save
+    save_results_as_csv(cpt, cpt_chavornay, r'c:\Users\camposmo\OneDrive - Stichting Deltares\Desktop\Geotechnical site investigations\results\bavois', vs_list, polygons_L24R10)
+
 
 for cpt in cpt_ependes_list:
     # pre-process the CPT
     cpt.pre_process_data()
-    # Calculate Vs with 3 different methods
+    # 1. Calculate Vs first (safe copies)
     vs_list = calculate_vs_with_different_methods(cpt, interpreter)
-    # Save the results as a CSV file
-    # save_results_as_csv(cpt, cpt_ependes, results_path, vs_list)
-
-
-def plot_cpts_lithology_style(cpt_list):
-    """
-    Plot multiple CPTs with depth vs pseudo-horizontal CPT position,
-    with points colored according to lithology Robertson, in clean engineering style.
-
-    Args:
-        cpt_list (list): List of GefCpt objects
-    """
-    import matplotlib.pyplot as plt
-    import numpy as np
-
-    plt.close()
-
-    # Prepare figure
-    plt.figure(figsize=(14, 8))  # Wider to fit many CPTs
-    ax = plt.gca()
-
-    # Define color mapping for lithologies
-    unique_lithologies = set()
-    for cpt in cpt_list:
-        if cpt.lithology is not None:
-            unique_lithologies.update(np.unique(cpt.lithology))
-    unique_lithologies = sorted(list(unique_lithologies))
-
-    color_palette = ['blue', 'red', 'green', 'purple', 'orange', 'yellow', 'cyan', 'magenta', 'black', 'gray']
-    lithology_colors = {lith: color_palette[i % len(color_palette)] for i, lith in enumerate(unique_lithologies)}
-
-    # Plot each CPT
-    for i, cpt in enumerate(cpt_list):
-        x_pos = i  # simple integer index for each CPT
-
-        if cpt.lithology is None:
-            continue  # skip if lithology not interpreted
-
-        color_values = [lithology_colors.get(lith, 'white') for lith in cpt.lithology]
-
-        # Plot one CPT
-        plt.scatter(
-            x_pos * np.ones_like(cpt.depth),
-            cpt.depth,
-            c=color_values,
-            marker='_',
-            s=400,  # Long flat lines
-            edgecolors='k',  # Black edge for visibility
-            linewidths=0.5
-        )
-        # Label the CPT at the top
-        plt.text(x_pos, np.min(cpt.depth) - 0.5, cpt.name[-4:], rotation=90, ha='center', va='top', fontsize=8)
-
-    # Invert Y axis
-    ax.invert_yaxis()
-    # Turn on the grid horizontally
-    ax.xaxis.grid(True, which='both', linestyle='--', linewidth=0.5)
-
-    # Labels
-    plt.xlabel("CPT Index")
-    plt.ylabel("Depth (m)")
-    plt.title("CPT Lithology Classification Overview")
-
-    # Legend for lithology
-    for lith, color in lithology_colors.items():
-        plt.scatter([], [], color=color, label=f"Lithology {lith}", s=80, marker='_')
-    plt.legend(bbox_to_anchor=(1.05, 1), loc='upper left', borderaxespad=0.)
-
-    plt.grid(axis='y')
-    plt.tight_layout()
-    plt.show()
-
-
-def plot_cpts_lithology_style_lgk(cpt_list, lithology_list):
-    """
-    Plot multiple CPTs with depth vs pseudo-horizontal CPT position,
-    with points colored according to provided lithology (external).
-
-    Args:
-        cpt_list (list): List of GefCpt objects
-        lithology_list (list of list): List with the same length as cpt_list,
-                                       each sublist has lithology values per depth
-    """
-    import matplotlib.pyplot as plt
-    import numpy as np
-
-    plt.close()
-    plt.figure(figsize=(14, 8))
-    ax = plt.gca()
-
-    # Build unique lithologies
-    unique_lithologies = set()
-    for lith in lithology_list:
-        if lith is not None:
-            unique_lithologies.update(np.unique(lith))
-    unique_lithologies = sorted(list(unique_lithologies))
-
-    color_palette = ['blue', 'red', 'green', 'purple', 'orange', 'yellow', 'cyan', 'magenta', 'black', 'gray']
-    lithology_colors = {lith: color_palette[i % len(color_palette)] for i, lith in enumerate(unique_lithologies)}
-
-    # Plot each CPT
-    for i, (cpt, lith) in enumerate(zip(cpt_list, lithology_list)):
-        x_pos = i
-
-        if lith is None:
-            continue
-
-        color_values = [lithology_colors.get(l, 'white') for l in lith]
-
-        plt.scatter(
-            x_pos * np.ones_like(cpt.depth),
-            cpt.depth,
-            c=color_values,
-            marker='_',
-            s=400,
-            edgecolors='k',
-            linewidths=0.5
-        )
-        plt.text(x_pos, np.min(cpt.depth) - 0.5, cpt.name[-4:], rotation=90, ha='center', va='top', fontsize=8)
-
-    ax.invert_yaxis()
-    ax.xaxis.grid(True, linestyle='--', linewidth=0.5)
-    plt.xlabel("CPT Index")
-    plt.ylabel("Depth (m)")
-    plt.title("CPT Lithology Classification Overview (Lengkeek 2024)")
-
-    for lith, color in lithology_colors.items():
-        plt.scatter([], [], color=color, label=f"Lithology {lith}", s=80, marker='_')
-    plt.legend(bbox_to_anchor=(1.05, 1), loc='upper left', borderaxespad=0.)
-
-    plt.grid(axis='y')
-    plt.tight_layout()
-    plt.show()
-
-
-plot_cpts_lithology_style(cpt_bavois_list)
-
-plot_cpts_lithology_style_lgk(cpt_bavois_list, lithologies_L24R10_bavois)
+    # 2. Now FINAL interpretation
+    cpt.interpret_cpt(interpreter)
+    # 3. Now save
+    save_results_as_csv(cpt, cpt_ependes, r'c:\Users\camposmo\OneDrive - Stichting Deltares\Desktop\Geotechnical site investigations\results\bavois', vs_list, polygons_L24R10)
 

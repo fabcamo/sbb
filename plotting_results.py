@@ -364,8 +364,99 @@ def plot_all_lithology(csv_folder_path, lithology_column, save_folder):
 
 # For BAVOIS
 
-csv_folder = r"c:\Users\camposmo\OneDrive - Stichting Deltares\Desktop\Geotechnical site investigations\results\bavois"
-save_path = r"c:\Users\camposmo\OneDrive - Stichting Deltares\Desktop\Geotechnical site investigations\results\bavois"
+# csv_folder = r"c:\Users\camposmo\OneDrive - Stichting Deltares\Desktop\Geotechnical site investigations\results\bavois"
+# save_path = r"c:\Users\camposmo\OneDrive - Stichting Deltares\Desktop\Geotechnical site investigations\results\bavois"
+#
+# plot_all_one_parameter(csv_folder, 'qt (kPa)', save_path)
+# plot_all_one_parameter(csv_folder, 'fs* (kPa)', save_path)
+# plot_all_one_parameter(csv_folder, 'Fr (%)', save_path)
+# plot_all_one_parameter(csv_folder, 'Qtn (kPa)', save_path)
+#
+# plot_all_two_parameters(csv_folder, 'Bq provided (-)', 'Bq calc (-)', save_path)
+# plot_all_two_parameters(csv_folder, 'Nkt {Fr} (-)', 'Nkt {Bq} (-)', save_path)
+# plot_all_two_parameters(csv_folder, 'psi (-)', 'psi dGeolib+ (-)', save_path)
+#
+# plot_all_three_parameters(csv_folder,
+#                           'St provided (-):',
+#                           'St (Nkt Fr) (-)',
+#                           'St (Nkt Bq) (-)',
+#                           save_path)
+#
+# plot_all_three_parameters(csv_folder,
+#                           'Su provided (kPa)',
+#                           'Su {Fr} (kPa)',
+#                           'Su {Bq} (kPa)',
+#                           save_path)
+#
+# plot_all_four_parameters(csv_folder,
+#                           'Vs Robertson (m/s)',
+#                           'Vs Mayne (m/s)',
+#                           'Vs Zhang (m/s)',
+#                          'Vs Ahmed (m/s)',
+#                           save_path)
+#
+# plot_all_four_parameters(csv_folder,
+#                           'E0 Robertson (MPa)',
+#                           'E0 Mayne (MPa)',
+#                           'E0 Zhang (MPa)',
+#                          'E0 Ahmed (MPa)',
+#                           save_path)
+#
+# # Lithologies
+# plot_all_lithology(csv_folder, 'lithology Robertson', save_path)
+# plot_all_lithology(csv_folder, 'lithology Lengkeek 2024', save_path)
+
+
+
+# For CHAVORNAY
+
+csv_folder = r"c:\Users\camposmo\OneDrive - Stichting Deltares\Desktop\Geotechnical site investigations\results\chavornay"
+save_path = r"c:\Users\camposmo\OneDrive - Stichting Deltares\Desktop\Geotechnical site investigations\results\chavornay"
+
+plot_all_one_parameter(csv_folder, 'qt (kPa)', save_path)
+plot_all_one_parameter(csv_folder, 'fs* (kPa)', save_path)
+plot_all_one_parameter(csv_folder, 'Fr (%)', save_path)
+plot_all_one_parameter(csv_folder, 'Qtn (kPa)', save_path)
+
+plot_all_two_parameters(csv_folder, 'Bq provided (-)', 'Bq calc (-)', save_path)
+plot_all_two_parameters(csv_folder, 'Nkt {Fr} (-)', 'Nkt {Bq} (-)', save_path)
+plot_all_two_parameters(csv_folder, 'psi (-)', 'psi dGeolib+ (-)', save_path)
+
+plot_all_three_parameters(csv_folder,
+                          'St provided (-):',
+                          'St (Nkt Fr) (-)',
+                          'St (Nkt Bq) (-)',
+                          save_path)
+
+plot_all_three_parameters(csv_folder,
+                          'Su provided (kPa)',
+                          'Su {Fr} (kPa)',
+                          'Su {Bq} (kPa)',
+                          save_path)
+
+plot_all_four_parameters(csv_folder,
+                          'Vs Robertson (m/s)',
+                          'Vs Mayne (m/s)',
+                          'Vs Zhang (m/s)',
+                         'Vs Ahmed (m/s)',
+                          save_path)
+
+plot_all_four_parameters(csv_folder,
+                          'E0 Robertson (MPa)',
+                          'E0 Mayne (MPa)',
+                          'E0 Zhang (MPa)',
+                         'E0 Ahmed (MPa)',
+                          save_path)
+
+# Lithologies
+plot_all_lithology(csv_folder, 'lithology Robertson', save_path)
+plot_all_lithology(csv_folder, 'lithology Lengkeek 2024', save_path)
+
+
+# For EPENDES
+
+csv_folder = r"c:\Users\camposmo\OneDrive - Stichting Deltares\Desktop\Geotechnical site investigations\results\ependes"
+save_path = r"c:\Users\camposmo\OneDrive - Stichting Deltares\Desktop\Geotechnical site investigations\results\ependes"
 
 plot_all_one_parameter(csv_folder, 'qt (kPa)', save_path)
 plot_all_one_parameter(csv_folder, 'fs* (kPa)', save_path)
