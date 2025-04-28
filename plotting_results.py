@@ -362,6 +362,7 @@ def plot_all_lithology(csv_folder_path, lithology_column, save_folder):
     print(f"[INFO] Lithology plot saved to {save_path}")
 
 
+
 # For BAVOIS
 
 # csv_folder = r"c:\Users\camposmo\OneDrive - Stichting Deltares\Desktop\Geotechnical site investigations\results\bavois"

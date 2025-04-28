@@ -327,58 +327,58 @@ def save_results_as_csv(cpt, cpt_dict, results_path, vs_results, polygons_L24R10
 
     # Build the interpreted data dictionary
     interpreted_data = {
-        'Depth* (m)': cpt.depth,
-        'Depth to reference level (m)': cpt.depth_to_reference,
+        'Depth (sbb) [m]': cpt.depth,
+        'Depth to reference [m]': cpt.depth_to_reference,
 
-        'qc* (kPa)': np.array(cpt.tip),
-        'fs* (kPa)': np.array(cpt.friction),
-        'Rf* (%)': cpt.friction_nbr,
-        'Fr (%)': cpt.Fr,
+        'qc (sbb) [kPa]': np.array(cpt.tip),
+        'fs (sbb) [kPa]': np.array(cpt.friction),
+        'Rf (sbb) [kPa]': cpt.friction_nbr,
+        'Fr [%]': cpt.Fr,
 
-        'PWP u2* (kPa)': cpt.pore_pressure_u2 * 1000,
-        'PWP u0 (kPa)': cpt.hydro_pore_pressure,
+        'PWP u2 (sbb) [kPa]': cpt.pore_pressure_u2 * 1000,
+        'PWP u0 [kPa]': cpt.hydro_pore_pressure,
 
-        'Effective Stress (kPa)': cpt.effective_stress,
-        'Total Stress (kPa)': cpt.total_stress,
+        'Effective Stress (Lengkeek 2022 gamma) [kPa]': cpt.effective_stress,
+        'Total Stress [kPa]': cpt.total_stress,
 
-        'qt (kPa)': cpt.qt,
-        'qn (kPa)': calc_qn(cpt),
-        'Qtn (kPa)': cpt.Qtn,
+        'qt [kPa]': cpt.qt,
+        'qn [kPa]': calc_qn(cpt),
+        'Qtn [kPa]': cpt.Qtn,
 
         'IC ': cpt.IC,
-        'lithology Robertson': cpt.lithology,
-        'lithology Lengkeek 2024': lithology_L24R10,
+        'lithology (Robertson)': cpt.lithology,
+        'lithology (Lengkeek 2024)': lithology_L24R10,
 
-        'Bq provided (-)': cpt_dict.get(cpt_key, {}).get('Bq', np.nan),
-        'Bq calc (-)': calc_Bq(cpt),
+        'Bq (sbb) [-]': cpt_dict.get(cpt_key, {}).get('Bq', np.nan),
+        'Bq calc [-]': calc_Bq(cpt),
 
-        'Nkt {Fr} (-)': Nkt_Fr,
-        'Nkt {Bq} (-)': Nkt_Bq,
-        'Su provided (kPa)': cpt_dict.get(cpt_key, {}).get('su', np.nan),
-        'Su {Fr} (kPa)': calc_Su(cpt, Nkt_Fr),
-        'Su {Bq} (kPa)': calc_Su(cpt, Nkt_Bq),
+        'Nkt (Fr method) [-]': Nkt_Fr,
+        'Nkt (Bq method) [-]': Nkt_Bq,
+        'Su (sbb) [kPa]': cpt_dict.get(cpt_key, {}).get('su', np.nan),
+        'Su (Nkt-Fr method) [kPa]': calc_Su(cpt, Nkt_Fr),
+        'Su (Nkt-Bq method) [kPa]': calc_Su(cpt, Nkt_Bq),
 
-        'St provided (-):': cpt_dict.get(cpt_key, {}).get('St', np.nan),
-        'St (Nkt Fr) (-)': calc_St(cpt, Nkt_Fr),
-        'St (Nkt Bq) (-)': calc_St(cpt, Nkt_Bq),
+        'St (sbb) [-]:': cpt_dict.get(cpt_key, {}).get('St', np.nan),
+        'St (Nkt-Fr method) [-]': calc_St(cpt, Nkt_Fr),
+        'St (Nkt-Bq method) [-]': calc_St(cpt, Nkt_Bq),
 
-        'psi (-)': calc_psi(cpt),
-        'psi dGeolib+ (-)': cpt.psi,
+        'psi (manual calculation) [-]': calc_psi(cpt),
+        'psi (dGeolib+ calculation) [-]': cpt.psi,
 
-        'Vs Robertson (m/s)': vs_robertson,
-        'Vs Mayne (m/s)': vs_mayne,
-        'Vs Zhang (m/s)': vs_zhang,
-        'Vs Ahmed (m/s)': vs_ahmed,
+        'Vs (Robertson) [m/s]': vs_robertson,
+        'Vs (Mayne) [m/s]': vs_mayne,
+        'Vs (Zhang) [m/s]': vs_zhang,
+        'Vs (Ahmed) [m/s]': vs_ahmed,
 
-        'E0 Robertson (MPa)': E0_robertson/1000,
-        'E0 Mayne (MPa)': E0_mayne/1000,
-        'E0 Zhang (MPa)': E0_zang/1000,
-        'E0 Ahmed (MPa)': E0_ahmed/1000,
+        'E0 (Robertson) [MPa]': E0_robertson/1000,
+        'E0 (Mayne) [MPa]': E0_mayne/1000,
+        'E0 (Zhang) [MPa]': E0_zang/1000,
+        'E0 (Ahmed) [MPa]': E0_ahmed/1000,
 
-        'G0 Robertson (MPa)': G0_robertson/1000,
-        'G0 Mayne (MPa)': G0_mayne/1000,
-        'G0 Zhang (MPa)': G0_zang/1000,
-        'G0 Ahmed (MPa)': G0_ahmed/1000,
+        'G0 (Robertson) [MPa]': G0_robertson/1000,
+        'G0 (Mayne) [MPa]': G0_mayne/1000,
+        'G0 (Zhang) [MPa]': G0_zang/1000,
+        'G0 (Ahmed) [MPa]': G0_ahmed/1000,
     }
 
     interpreted_df = pd.DataFrame(interpreted_data)
@@ -450,7 +450,7 @@ for cpt in cpt_chavornay_list:
     # 2. Now FINAL interpretation
     cpt.interpret_cpt(interpreter)
     # 3. Now save
-    save_results_as_csv(cpt, cpt_chavornay, r'c:\Users\camposmo\OneDrive - Stichting Deltares\Desktop\Geotechnical site investigations\results\bavois', vs_list, polygons_L24R10)
+    #save_results_as_csv(cpt, cpt_chavornay, r'c:\Users\camposmo\OneDrive - Stichting Deltares\Desktop\Geotechnical site investigations\results\bavois', vs_list, polygons_L24R10)
 
 
 for cpt in cpt_ependes_list:
@@ -461,5 +461,64 @@ for cpt in cpt_ependes_list:
     # 2. Now FINAL interpretation
     cpt.interpret_cpt(interpreter)
     # 3. Now save
-    save_results_as_csv(cpt, cpt_ependes, r'c:\Users\camposmo\OneDrive - Stichting Deltares\Desktop\Geotechnical site investigations\results\bavois', vs_list, polygons_L24R10)
+    #save_results_as_csv(cpt, cpt_ependes, r'c:\Users\camposmo\OneDrive - Stichting Deltares\Desktop\Geotechnical site investigations\results\bavois', vs_list, polygons_L24R10)
 
+import os
+import glob
+import pandas as pd
+
+
+def add_measured_vs_data(excel_path, csv_folder_path):
+    """
+    Add measured Z and Vs data from SDMT Excel file into the existing interpreted CPT CSVs.
+
+    Args:
+        excel_path (str): Path to the Excel file (with multiple sheets).
+        csv_folder_path (str): Path to folder containing the interpreted CPT CSVs.
+    """
+    # Open the Excel file
+    xls = pd.ExcelFile(excel_path)
+    sheet_names = xls.sheet_names
+
+    # Find all CSV files
+    csv_files = sorted(glob.glob(os.path.join(csv_folder_path, "*.csv")))
+
+    # Only SCPTU files
+    scptu_files = [f for f in csv_files if "SCPTU" in os.path.basename(f)]
+
+    print(f"[INFO] Found {len(scptu_files)} SCPTU files to process.")
+
+    for csv_file in scptu_files:
+        file_name = os.path.basename(csv_file)
+
+        # Extract CPT number (e.g., SCPTU01)
+        cpt_number = file_name.split("_")[0].replace("SCPTU", "").zfill(2)  # always two digits
+        expected_sheet_name = f"SCPTU {cpt_number}-24 - Vs"
+
+        if expected_sheet_name not in sheet_names:
+            print(f"[ERROR] Sheet {expected_sheet_name} not found for {file_name}, skipping.")
+            continue
+
+        # Read the correct sheet (skip first 4 rows, where units are)
+        df_sdmt = pd.read_excel(excel_path, sheet_name=expected_sheet_name, skiprows=3, usecols="A:B")
+        df_sdmt.columns = ["Z from SDMT", "Vs from SDMT"]
+
+        # Read existing CPT CSV
+        df_cpt = pd.read_csv(csv_file)
+
+        # Add the new columns to the CPT dataframe
+        df_cpt["Z from SDMT"] = df_sdmt["Z from SDMT"]
+        df_cpt["Vs from SDMT"] = df_sdmt["Vs from SDMT"]
+
+        # Save it back (overwrite)
+        df_cpt.to_csv(csv_file, index=False)
+
+        print(f"[INFO] Added measured data to {file_name}")
+
+    print("[INFO] Finished adding SDMT measured data.")
+
+
+SMDT_bavois_path = r"c:\Users\camposmo\OneDrive - Stichting Deltares\Desktop\Geotechnical site investigations\L210_22400-26400_Bavois site investigation\CPT\SDMT Report.xlsx"
+bavois_results_path = r'c:\Users\camposmo\OneDrive - Stichting Deltares\Desktop\Geotechnical site investigations\results\bavois'
+
+add_measured_vs_data(SMDT_bavois_path, bavois_results_path)
