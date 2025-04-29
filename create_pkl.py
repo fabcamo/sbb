@@ -11,8 +11,8 @@ def read_cpt_txt(filepath, encoding='latin1'):
     Preserves original column names and returns clean numeric data.
     """
     column_names = [
-        "z", "qc", "fs", "u2", "|Rf|", "Bq", "su", "CSS",
-        "St", "?'", "c'", "Id", "?'p", "ME1"
+        "z", "qc", "fs", "u2", "|Rf|", "Bq", "su CSS",
+        "St", "?'", "c'", "Id", "?'p", "ME1", "no_id"
     ]
 
     with open(filepath, 'r', encoding=encoding) as f:
