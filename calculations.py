@@ -43,6 +43,7 @@ def calculate_vs_with_different_methods(cpt, interpreter):
         "Mayne": ShearWaveVelocityMethod.MAYNE,
         "Zang": ShearWaveVelocityMethod.ZANG,
         "Ahmed": ShearWaveVelocityMethod.AHMED,
+        "Kruiver": ShearWaveVelocityMethod.KRUIVER,
     }
 
     for method_name, method_enum in methods.items():

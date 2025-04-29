@@ -118,6 +118,10 @@ def build_interpreted_data(cpt, cpt_dict, vs_results, polygons_L24R10):
         'Effective Stress (Lengkeek 2022 gamma) [kPa]': cpt.effective_stress,
         'Total Stress [kPa]': cpt.total_stress,
 
+        'rho [kg/m3]': cpt.rho,
+        'relative density (sbb) [%]':cpt_dict.get(cpt_key, {}).get('Id', np.nan),
+        'relative density [%]': cpt.relative_density,
+
         'qt [kPa]': cpt.qt,
         'qn [kPa]': calc_qn(cpt),
         'Qtn [kPa]': cpt.Qtn,
@@ -148,16 +152,19 @@ def build_interpreted_data(cpt, cpt_dict, vs_results, polygons_L24R10):
         'Vs (Mayne) [m/s]': vs_results["Mayne"]["vs"],
         'Vs (Zhang) [m/s]': vs_results["Zang"]["vs"],
         'Vs (Ahmed) [m/s]': vs_results["Ahmed"]["vs"],
+        'Vs (Kruiver) [m/s]': vs_results["Kruiver"]["vs"],
 
         'E0 (Robertson) [MPa]': vs_results["Robertson"]["E0"] / 1000,
         'E0 (Mayne) [MPa]': vs_results["Mayne"]["E0"] / 1000,
         'E0 (Zhang) [MPa]': vs_results["Zang"]["E0"] / 1000,
         'E0 (Ahmed) [MPa]': vs_results["Ahmed"]["E0"] / 1000,
+        'E0 (Kruiver) [MPa]': vs_results["Kruiver"]["E0"] / 1000,
 
         'G0 (Robertson) [MPa]': vs_results["Robertson"]["G0"] / 1000,
         'G0 (Mayne) [MPa]': vs_results["Mayne"]["G0"] / 1000,
         'G0 (Zhang) [MPa]': vs_results["Zang"]["G0"] / 1000,
         'G0 (Ahmed) [MPa]': vs_results["Ahmed"]["G0"] / 1000,
+        'G0 (Kruiver) [MPa]': vs_results["Kruiver"]["G0"] / 1000,
     }
 
     return interpreted_data
