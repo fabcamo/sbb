@@ -22,7 +22,9 @@ metadata_path = r"c:\Users\camposmo\OneDrive - Stichting Deltares\Desktop\Geotec
 L24R10_path = r"c:\Users\camposmo\OneDrive - Stichting Deltares\Desktop\Geotechnical site investigations\polygons_L24R10.pkl"
 
 # Shear wave measurements in the SCPT path
-SMDT_bavois_path = r"c:\Users\camposmo\OneDrive - Stichting Deltares\Desktop\Geotechnical site investigations\L210_22400-26400_Bavois site investigation\CPT\SDMT Report.xlsx"
+SCPTu_bavois_path = r"c:\Users\camposmo\OneDrive - Stichting Deltares\Desktop\Geotechnical site investigations\L210_22400-26400_Bavois site investigation\CPT\SDMT Report.xlsx"
+SCPTu_chavornay_path = r"c:\Users\camposmo\OneDrive - Stichting Deltares\Desktop\Geotechnical site investigations\L210_28200-33000_Chavornay-Ependes site investigation\CPT\SCPTU Werte.xlsx"
+SCPTu_ependes_path = r"c:\Users\camposmo\OneDrive - Stichting Deltares\Desktop\Geotechnical site investigations\L210_33000-37500_Ependes-Yverdon site investigation\CPT Roh-Daten\SCPTu VS summary.xlsx"
 
 # Save results path
 bavois_results_path = r'c:\Users\camposmo\OneDrive - Stichting Deltares\Desktop\Geotechnical site investigations\results\bavois'
@@ -104,4 +106,6 @@ for cpt in cpt_ependes_list:
     save_results_as_csv(cpt, cpt_ependes, ependes_results_path, vs_list, polygons_L24R10)
 
 # Add the measured shear wave velocity to the results
-add_measured_vs_data(SMDT_bavois_path, bavois_results_path)
+add_measured_vs_data(SCPTu_bavois_path, bavois_results_path)
+add_measured_vs_data(SCPTu_chavornay_path, chavornay_results_path)
+add_measured_vs_data(SCPTu_ependes_path, ependes_results_path)

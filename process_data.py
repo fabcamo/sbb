@@ -141,11 +141,11 @@ def build_interpreted_data(cpt, cpt_dict, vs_results, polygons_L24R10):
         'Su (Nkt-Fr method) [kPa]': Su_Fr_filtered,
         'Su (Nkt-Bq method) [kPa]': Su_Bq_filtered,
 
-        'St (sbb) [-]:': cpt_dict.get(cpt_key, {}).get('St', np.nan),
-        'St (Nkt-Fr method) [-]:': St_Fr_filtered,
-        'St (Nkt-Bq method) [-]:': St_Bq_filtered,
+        'St (sbb) [-]': cpt_dict.get(cpt_key, {}).get('St', np.nan),
+        'St (Nkt-Fr method) [-]': St_Fr_filtered,
+        'St (Nkt-Bq method) [-]': St_Bq_filtered,
 
-        'psi (manual calculation) [-]:': psi_manual_filtered,
+        'psi (manual calculation) [-]': psi_manual_filtered,
         'psi (dGeolib+ calculation) [-]': cpt.psi,
 
         'Vs (Robertson) [m/s]': vs_results["Robertson"]["vs"],
