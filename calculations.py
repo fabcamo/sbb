@@ -1,5 +1,7 @@
 import copy
 import numpy as np
+import pandas as pd
+
 from shapely.geometry import Point
 
 from geolib_plus.gef_cpt import GefCpt
@@ -270,3 +272,137 @@ def filter_by_IB(Su_Fr, Su_Bq, St_Fr, St_Bq, psi_manual, IB):
     psi_manual_filtered[mask_low] = np.nan
 
     return Su_Fr_filtered, Su_Bq_filtered, St_Fr_filtered, St_Bq_filtered, psi_manual_filtered
+
+
+def merge_layers(cpt, lithology, min_thickness: float = 0.5):
+    """
+    Collapse lithology layers thinner than `min_thickness` onto their
+    thicker neighbours.
+
+    Parameters
+    ----------
+    cpt : object
+        Needs `cpt.depth` – 1-D array of depths (m).
+    lithology : 1-D array-like or pandas Series
+        Lithology labels aligned with `cpt.depth`.  May be strings or a
+        pandas Categorical; mixed labels such as '2a', '2b' are preserved.
+    min_thickness : float, default 0.5
+        Minimum layer thickness to keep (metres).
+
+    Returns
+    -------
+    np.ndarray (dtype=object)
+        `lithology_merged` – cleaned labels, same length/order as `lithology`.
+    """
+    depth = np.asarray(cpt.depth, dtype=float)
+
+    # --- force TRUE string labels, even for Categoricals ------------------
+    if isinstance(lithology, pd.Series):
+        litho_orig = lithology.astype(str).to_numpy()
+    else:
+        litho_orig = np.asarray(lithology).astype(str)
+
+    if depth.size < 2:  # trivial profile
+        return litho_orig.copy()
+
+    # 1. Nominal vertical resolution
+    dz = float(np.median(np.diff(depth)))
+    min_samples = int(np.ceil(min_thickness / dz))
+
+    # 2. Run-length encode
+    codes, starts, lengths = [], [], []
+    start = 0
+    for i in range(1, len(litho_orig)):
+        if litho_orig[i] != litho_orig[i - 1]:
+            codes.append(litho_orig[i - 1])
+            starts.append(start)
+            lengths.append(i - start)
+            start = i
+    codes.append(litho_orig[-1])
+    starts.append(start)
+    lengths.append(len(litho_orig) - start)
+
+    # 3. Lock already-thick segments
+    locked = [L >= min_samples for L in lengths]
+
+    # 4. Iteratively merge thin segments
+    changed = True
+    while changed:
+        changed = False
+        for i, is_locked in enumerate(list(locked)):  # work on a copy
+            if is_locked:
+                continue
+
+            left = i - 1 if i > 0 else None
+            right = i + 1 if i < len(codes) - 1 else None
+            nbrs = [idx for idx in (left, right) if idx is not None]
+
+            # pick neighbour: prefer locked, else thicker
+            locked_nbrs = [idx for idx in nbrs if locked[idx]]
+            target = (max(locked_nbrs, key=lambda idx: lengths[idx])
+                      if locked_nbrs else
+                      max(nbrs, key=lambda idx: lengths[idx]))
+
+            lengths[target] += lengths[i]
+            if lengths[target] >= min_samples:
+                locked[target] = True
+
+            del codes[i], starts[i], lengths[i], locked[i]
+            changed = True
+            break  # restart because indices shifted
+
+    # 5. Paint back to full depth grid
+    lithology_merged = litho_orig.copy()
+    for code, start, length in zip(codes, starts, lengths):
+        lithology_merged[start:start + length] = code
+
+    return lithology_merged
+
+
+def calc_peat_gamma_Lengkeek(cpt: GefCpt, lithology: np.ndarray) -> np.ndarray:
+    """
+    Calculate the unit weight specifically for peat based on correlation from Figure 8 in Lengkeek (2022).
+
+    Params:
+        cpt (GefCpt): The CPT object with the interpreted data.
+        lithology (np.ndarray): The lithology array to filter for peat.
+
+    Returns:
+        peat_gamma (np.ndarray): The calculated unit weight for peat.
+    """
+
+    # From the cpt object, call qt
+    qt = cpt.qt
+
+    # Compute the unit weight for peat
+    peat_gamma = 0.000685 * qt + 10.1
+
+    # Filter the peat_gamma to have values only where lithology is in categories '2a' and '2b'
+    # if not in these categories, leave the value as blank
+    peat_gamma[~np.isin(lithology, ['2a', '2b'])] = np.nan
+
+    return peat_gamma
+
+
+def calc_gamma_from_Lengkeek_Gs(cpt: GefCpt) -> np.ndarray:
+    """
+    Calculate the unit weight based on the correlation for Gs from Lengkeek (2022),
+    to later use that Gs to calculate the unit weight based on Robertson formula.
+
+    Params:
+        cpt (GefCpt): The CPT object with the interpreted data.
+
+    Returns:
+        gamma_Gs (np.ndarray): The calculated unit weight based on Gs from Lengkeek and gamma from Robertson.
+
+    """
+    Lengkeek_Gs = (-0.147 * cpt.friction_nbr) + 2.88
+
+    gamma_Gs = (0.27 * np.log10(cpt.friction_nbr)
+                                   + 0.36 * np.log10(np.array(cpt.qt) / cpt.Pa)
+                                   + 1.236) * (Lengkeek_Gs / 2.65) * 9.81
+
+    # When Rf is 0, set gamma_Gs to NaN
+    gamma_Gs[cpt.friction_nbr == 0] = np.nan
+
+    return gamma_Gs

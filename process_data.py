@@ -5,6 +5,7 @@ import numpy as np
 
 from geolib_plus.gef_cpt import GefCpt
 from calculations import calc_qn, calc_Bq, calc_Nkt, calc_Su, calc_St, calc_psi, calc_IB, L24R10_lithology, filter_by_IB
+from calculations import calc_peat_gamma_Lengkeek, calc_gamma_from_Lengkeek_Gs
 
 
 def create_cpt_object(cpt_name: str, cpt_dict: dict, metadata_df: pd.DataFrame, site_name: str) -> GefCpt:
@@ -118,7 +119,10 @@ def build_interpreted_data(cpt, cpt_dict, vs_results, polygons_L24R10):
         'Effective Stress (Lengkeek 2022 gamma) [kPa]': cpt.effective_stress,
         'Total Stress [kPa]': cpt.total_stress,
 
-        'rho [kg/m3]': cpt.rho,
+        'Bulk density (from Lengkeek 2022) [kg/m3]': cpt.rho,
+        'Bulk density for peat (from Fig8, Lengkeek 2022) [kg/m3]': (calc_peat_gamma_Lengkeek(cpt, lithology_L24R10) * 1000) / cpt.g,
+        'Bulk density (from Gs Fig.9, Lengkeek 2022) [kg/m3]': (calc_gamma_from_Lengkeek_Gs(cpt) * 1000) / cpt.g,
+
         'relative density (sbb) [%]':cpt_dict.get(cpt_key, {}).get('Id', np.nan),
         'relative density [%]': cpt.relative_density,
 
@@ -212,7 +216,7 @@ def add_measured_vs_data(excel_path, csv_folder_path):
         file_name = os.path.basename(csv_file)
 
         # Extract CPT number (e.g., SCPTU01)
-        cpt_number = file_name.split("_")[0].replace("SCPTU", "").zfill(2)  # always two digits
+        cpt_number = file_name.split("_")[0].replace("SCPTU", "").zfill(2)
         expected_sheet_name = f"SCPTU {cpt_number}-24 - Vs"
 
         if expected_sheet_name not in sheet_names:

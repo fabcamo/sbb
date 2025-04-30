@@ -427,8 +427,8 @@ def plot_all_lithology(csv_folder_path, lithology_column, save_folder):
 
 # For BAVOIS ############################################################################################################
 
-csv_folder = r"c:\Users\camposmo\OneDrive - Stichting Deltares\Desktop\Geotechnical site investigations\results\bavois"
-save_path = r"c:\Users\camposmo\OneDrive - Stichting Deltares\Desktop\Geotechnical site investigations\results\bavois"
+csv_folder = r"c:\Users\camposmo\OneDrive - Stichting Deltares\Desktop\Geotechnical site investigations\results\min_thick"
+save_path = r"c:\Users\camposmo\OneDrive - Stichting Deltares\Desktop\Geotechnical site investigations\results\min_thick"
 
 plot_all_one_parameter(csv_folder, 'qt [kPa]', save_path)
 plot_all_one_parameter(csv_folder, 'fs (sbb) [kPa]', save_path)
@@ -470,96 +470,97 @@ plot_all_five_plus_sdmt(csv_folder,
 # Lithologies
 plot_all_lithology(csv_folder, 'lithology (Robertson)', save_path)
 plot_all_lithology(csv_folder, 'lithology (Lengkeek 2024)', save_path)
+plot_all_lithology(csv_folder, 'lithology min 0.5m (Lengkeek 2024)', save_path)
 
 
 
-# For CHAVORNAY #########################################################################################################
-
-csv_folder = r"c:\Users\camposmo\OneDrive - Stichting Deltares\Desktop\Geotechnical site investigations\results\chavornay"
-save_path = r"c:\Users\camposmo\OneDrive - Stichting Deltares\Desktop\Geotechnical site investigations\results\chavornay"
-
-plot_all_one_parameter(csv_folder, 'qt [kPa]', save_path)
-plot_all_one_parameter(csv_folder, 'fs (sbb) [kPa]', save_path)
-plot_all_one_parameter(csv_folder, 'Fr [%]', save_path)
-plot_all_one_parameter(csv_folder, 'Qtn [kPa]', save_path)
-plot_all_one_parameter(csv_folder, 'rho [kg/m3]', save_path)
-
-plot_all_two_parameters(csv_folder, 'Bq (sbb) [-]', 'Bq calc [-]', save_path)
-plot_all_two_parameters(csv_folder, 'Nkt (Fr method) [-]', 'Nkt (Bq method) [-]', save_path)
-plot_all_two_parameters(csv_folder, 'psi (manual calculation) [-]', 'psi (dGeolib+ calculation) [-]', save_path)
-plot_all_three_parameters(csv_folder,
-                          'Total Stress [kPa]',
-                          'Effective Stress (Lengkeek 2022 gamma) [kPa]',
-                          'PWP u0 [kPa]',
-                          save_path)
-
-plot_all_three_parameters(csv_folder,
-                          'St (sbb) [-]',
-                          'St (Nkt-Fr method) [-]',
-                          'St (Nkt-Bq method) [-]',
-                          save_path)
-
-plot_all_three_parameters(csv_folder,
-                          'Su (sbb) [kPa]',
-                          'Su (Nkt-Fr method) [kPa]',
-                          'Su (Nkt-Bq method) [kPa]',
-                          save_path)
-
-plot_all_five_plus_sdmt(csv_folder,
-                        'Vs (Robertson) [m/s]',
-                        'Vs (Mayne) [m/s]',
-                        'Vs (Zhang) [m/s]',
-                        'Vs (Ahmed) [m/s]',
-                        'Vs (Kruiver) [m/s]',
-                        save_path)
-
-
-# Lithologies
-plot_all_lithology(csv_folder, 'lithology (Robertson)', save_path)
-plot_all_lithology(csv_folder, 'lithology (Lengkeek 2024)', save_path)
-
-
-# For EPENDES #########################################################################################################
-
-csv_folder = r"c:\Users\camposmo\OneDrive - Stichting Deltares\Desktop\Geotechnical site investigations\results\ependes"
-save_path = r"c:\Users\camposmo\OneDrive - Stichting Deltares\Desktop\Geotechnical site investigations\results\ependes"
-
-plot_all_one_parameter(csv_folder, 'qt [kPa]', save_path)
-plot_all_one_parameter(csv_folder, 'fs (sbb) [kPa]', save_path)
-plot_all_one_parameter(csv_folder, 'Fr [%]', save_path)
-plot_all_one_parameter(csv_folder, 'Qtn [kPa]', save_path)
-plot_all_one_parameter(csv_folder, 'rho [kg/m3]', save_path)
-
-plot_all_two_parameters(csv_folder, 'Bq (sbb) [-]', 'Bq calc [-]', save_path)
-plot_all_two_parameters(csv_folder, 'Nkt (Fr method) [-]', 'Nkt (Bq method) [-]', save_path)
-plot_all_two_parameters(csv_folder, 'psi (manual calculation) [-]', 'psi (dGeolib+ calculation) [-]', save_path)
-plot_all_three_parameters(csv_folder,
-                          'Total Stress [kPa]',
-                          'Effective Stress (Lengkeek 2022 gamma) [kPa]',
-                          'PWP u0 [kPa]',
-                          save_path)
-
-plot_all_three_parameters(csv_folder,
-                          'St (sbb) [-]',
-                          'St (Nkt-Fr method) [-]',
-                          'St (Nkt-Bq method) [-]',
-                          save_path)
-
-plot_all_three_parameters(csv_folder,
-                          'Su (sbb) [kPa]',
-                          'Su (Nkt-Fr method) [kPa]',
-                          'Su (Nkt-Bq method) [kPa]',
-                          save_path)
-
-plot_all_five_plus_sdmt(csv_folder,
-                        'Vs (Robertson) [m/s]',
-                        'Vs (Mayne) [m/s]',
-                        'Vs (Zhang) [m/s]',
-                        'Vs (Ahmed) [m/s]',
-                        'Vs (Kruiver) [m/s]',
-                        save_path)
-
-
-# Lithologies
-plot_all_lithology(csv_folder, 'lithology (Robertson)', save_path)
-plot_all_lithology(csv_folder, 'lithology (Lengkeek 2024)', save_path)
+# # For CHAVORNAY #########################################################################################################
+#
+# csv_folder = r"c:\Users\camposmo\OneDrive - Stichting Deltares\Desktop\Geotechnical site investigations\results\chavornay"
+# save_path = r"c:\Users\camposmo\OneDrive - Stichting Deltares\Desktop\Geotechnical site investigations\results\chavornay"
+#
+# plot_all_one_parameter(csv_folder, 'qt [kPa]', save_path)
+# plot_all_one_parameter(csv_folder, 'fs (sbb) [kPa]', save_path)
+# plot_all_one_parameter(csv_folder, 'Fr [%]', save_path)
+# plot_all_one_parameter(csv_folder, 'Qtn [kPa]', save_path)
+# plot_all_one_parameter(csv_folder, 'rho [kg/m3]', save_path)
+#
+# plot_all_two_parameters(csv_folder, 'Bq (sbb) [-]', 'Bq calc [-]', save_path)
+# plot_all_two_parameters(csv_folder, 'Nkt (Fr method) [-]', 'Nkt (Bq method) [-]', save_path)
+# plot_all_two_parameters(csv_folder, 'psi (manual calculation) [-]', 'psi (dGeolib+ calculation) [-]', save_path)
+# plot_all_three_parameters(csv_folder,
+#                           'Total Stress [kPa]',
+#                           'Effective Stress (Lengkeek 2022 gamma) [kPa]',
+#                           'PWP u0 [kPa]',
+#                           save_path)
+#
+# plot_all_three_parameters(csv_folder,
+#                           'St (sbb) [-]',
+#                           'St (Nkt-Fr method) [-]',
+#                           'St (Nkt-Bq method) [-]',
+#                           save_path)
+#
+# plot_all_three_parameters(csv_folder,
+#                           'Su (sbb) [kPa]',
+#                           'Su (Nkt-Fr method) [kPa]',
+#                           'Su (Nkt-Bq method) [kPa]',
+#                           save_path)
+#
+# plot_all_five_plus_sdmt(csv_folder,
+#                         'Vs (Robertson) [m/s]',
+#                         'Vs (Mayne) [m/s]',
+#                         'Vs (Zhang) [m/s]',
+#                         'Vs (Ahmed) [m/s]',
+#                         'Vs (Kruiver) [m/s]',
+#                         save_path)
+#
+#
+# # Lithologies
+# plot_all_lithology(csv_folder, 'lithology (Robertson)', save_path)
+# plot_all_lithology(csv_folder, 'lithology (Lengkeek 2024)', save_path)
+#
+#
+# # For EPENDES #########################################################################################################
+#
+# csv_folder = r"c:\Users\camposmo\OneDrive - Stichting Deltares\Desktop\Geotechnical site investigations\results\ependes"
+# save_path = r"c:\Users\camposmo\OneDrive - Stichting Deltares\Desktop\Geotechnical site investigations\results\ependes"
+#
+# plot_all_one_parameter(csv_folder, 'qt [kPa]', save_path)
+# plot_all_one_parameter(csv_folder, 'fs (sbb) [kPa]', save_path)
+# plot_all_one_parameter(csv_folder, 'Fr [%]', save_path)
+# plot_all_one_parameter(csv_folder, 'Qtn [kPa]', save_path)
+# plot_all_one_parameter(csv_folder, 'rho [kg/m3]', save_path)
+#
+# plot_all_two_parameters(csv_folder, 'Bq (sbb) [-]', 'Bq calc [-]', save_path)
+# plot_all_two_parameters(csv_folder, 'Nkt (Fr method) [-]', 'Nkt (Bq method) [-]', save_path)
+# plot_all_two_parameters(csv_folder, 'psi (manual calculation) [-]', 'psi (dGeolib+ calculation) [-]', save_path)
+# plot_all_three_parameters(csv_folder,
+#                           'Total Stress [kPa]',
+#                           'Effective Stress (Lengkeek 2022 gamma) [kPa]',
+#                           'PWP u0 [kPa]',
+#                           save_path)
+#
+# plot_all_three_parameters(csv_folder,
+#                           'St (sbb) [-]',
+#                           'St (Nkt-Fr method) [-]',
+#                           'St (Nkt-Bq method) [-]',
+#                           save_path)
+#
+# plot_all_three_parameters(csv_folder,
+#                           'Su (sbb) [kPa]',
+#                           'Su (Nkt-Fr method) [kPa]',
+#                           'Su (Nkt-Bq method) [kPa]',
+#                           save_path)
+#
+# plot_all_five_plus_sdmt(csv_folder,
+#                         'Vs (Robertson) [m/s]',
+#                         'Vs (Mayne) [m/s]',
+#                         'Vs (Zhang) [m/s]',
+#                         'Vs (Ahmed) [m/s]',
+#                         'Vs (Kruiver) [m/s]',
+#                         save_path)
+#
+#
+# # Lithologies
+# plot_all_lithology(csv_folder, 'lithology (Robertson)', save_path)
+# plot_all_lithology(csv_folder, 'lithology (Lengkeek 2024)', save_path)
