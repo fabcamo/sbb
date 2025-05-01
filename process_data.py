@@ -106,69 +106,70 @@ def build_interpreted_data(cpt, cpt_dict, vs_results, polygons_L24R10):
     # Build dictionary (same as you had)
     interpreted_data = {
         'Depth (sbb) [m]': cpt.depth,
-        'Depth to reference [m]': cpt.depth_to_reference,
+        'Depth_to_reference [m]': cpt.depth_to_reference,
 
         'qc (sbb) [kPa]': np.array(cpt.tip),
         'fs (sbb) [kPa]': np.array(cpt.friction),
         'Rf (sbb) [kPa]': cpt.friction_nbr,
         'Fr [%]': cpt.Fr,
 
-        'PWP u2 (sbb) [kPa]': cpt.pore_pressure_u2 * 1000,
-        'PWP u0 [kPa]': cpt.hydro_pore_pressure,
+        'PWP_u2 (sbb) [kPa]': cpt.pore_pressure_u2 * 1000,
+        'PWP_u0 [kPa]': cpt.hydro_pore_pressure,
 
-        'Effective Stress (Lengkeek 2022 gamma) [kPa]': cpt.effective_stress,
-        'Total Stress [kPa]': cpt.total_stress,
+        'sigma_v_prime [kPa]': cpt.effective_stress,
+        'sigma_v_total (Lengkeek 2022) [kPa]': cpt.total_stress,
 
-        'Bulk density (from Lengkeek 2022) [kg/m3]': cpt.rho,
-        'Bulk density for peat (from Fig8, Lengkeek 2022) [kg/m3]': (calc_peat_gamma_Lengkeek(cpt, lithology_L24R10) * 1000) / cpt.g,
-        'Bulk density (from Gs Fig.9, Lengkeek 2022) [kg/m3]': (calc_gamma_from_Lengkeek_Gs(cpt) * 1000) / cpt.g,
+        'rho (Lengkeek 2022) [kg/m3]': cpt.rho,
+        'rho_peat (Fig8 Lengkeek 2022) [kg/m3]': (calc_peat_gamma_Lengkeek(cpt, lithology_L24R10) * 1000) / cpt.g,
+        'rho_Gs (Lengkeek+Robertson2010) [kg/m3]': (calc_gamma_from_Lengkeek_Gs(cpt) * 1000) / cpt.g,
 
-        'relative density (sbb) [%]':cpt_dict.get(cpt_key, {}).get('Id', np.nan),
-        'relative density [%]': cpt.relative_density,
+        'relative_density (sbb) [%]': cpt_dict.get(cpt_key, {}).get('Id', np.nan),
+        'relative_density [%]': cpt.relative_density,
 
         'qt [kPa]': cpt.qt,
         'qn [kPa]': calc_qn(cpt),
         'Qtn [kPa]': cpt.Qtn,
 
-        'IC ': cpt.IC,
-        'IB ': IB,
-        'lithology (Robertson)': cpt.lithology,
+        'IC': cpt.IC,
+        'IB': IB,
+
+        'lithology (Robertson and Cabal 2010)': cpt.lithology,
         'lithology (Lengkeek 2024)': lithology_L24R10,
 
         'Bq (sbb) [-]': cpt_dict.get(cpt_key, {}).get('Bq', np.nan),
-        'Bq calc [-]': calc_Bq(cpt),
+        'Bq_calc [-]': calc_Bq(cpt),
 
-        'Nkt (Fr method) [-]': Nkt_Fr,
-        'Nkt (Bq method) [-]': Nkt_Bq,
+        'Nkt_Fr [-]': Nkt_Fr,
+        'Nkt_Bq [-]': Nkt_Bq,
 
         'Su (sbb) [kPa]': cpt_dict.get(cpt_key, {}).get('su CSS', np.nan),
-        'Su (Nkt-Fr method) [kPa]': Su_Fr_filtered,
-        'Su (Nkt-Bq method) [kPa]': Su_Bq_filtered,
+        'Su (Nkt_Fr) [kPa]': Su_Fr_filtered,
+        'Su (Nkt_Bq) [kPa]': Su_Bq_filtered,
 
         'St (sbb) [-]': cpt_dict.get(cpt_key, {}).get('St', np.nan),
-        'St (Nkt-Fr method) [-]': St_Fr_filtered,
-        'St (Nkt-Bq method) [-]': St_Bq_filtered,
+        'St (Nkt_Fr) [-]': St_Fr_filtered,
+        'St (Nkt_Bq) [-]': St_Bq_filtered,
 
-        'psi (manual calculation) [-]': psi_manual_filtered,
-        'psi (dGeolib+ calculation) [-]': cpt.psi,
+        'psi (Plewes et al 1992) [-]': psi_manual_filtered,
+        'psi (Robertson 2009) [-]': cpt.psi,
 
-        'Vs (Robertson) [m/s]': vs_results["Robertson"]["vs"],
-        'Vs (Mayne) [m/s]': vs_results["Mayne"]["vs"],
-        'Vs (Zhang) [m/s]': vs_results["Zang"]["vs"],
-        'Vs (Ahmed) [m/s]': vs_results["Ahmed"]["vs"],
-        'Vs (Kruiver) [m/s]': vs_results["Kruiver"]["vs"],
+        'Vs (Robertson and Cabal 2014) [m/s]': vs_results["Robertson"]["vs"],
+        'Vs (Mayne 2007) [m/s]': vs_results["Mayne"]["vs"],
+        'Vs (Zhang and Tong 2017) [m/s]': vs_results["Zang"]["vs"],
+        'Vs (Ahmed 2017) [m/s]': vs_results["Ahmed"]["vs"],
+        'Vs (Kruiver et al 2020) [m/s]': vs_results["Kruiver"]["vs"],
 
-        'E0 (Robertson) [MPa]': vs_results["Robertson"]["E0"] / 1000,
-        'E0 (Mayne) [MPa]': vs_results["Mayne"]["E0"] / 1000,
-        'E0 (Zhang) [MPa]': vs_results["Zang"]["E0"] / 1000,
-        'E0 (Ahmed) [MPa]': vs_results["Ahmed"]["E0"] / 1000,
-        'E0 (Kruiver) [MPa]': vs_results["Kruiver"]["E0"] / 1000,
+        'E0 (Robertson and Cabal 2014) [MPa]': vs_results["Robertson"]["E0"] / 1000,
+        'E0 (Mayne 2007) [MPa]': vs_results["Mayne"]["E0"] / 1000,
+        'E0 (Zhang and Tong 2017) [MPa]': vs_results["Zang"]["E0"] / 1000,
+        'E0 (Ahmed 2017) [MPa]': vs_results["Ahmed"]["E0"] / 1000,
+        'E0 (Kruiver et al 2020) [MPa]': vs_results["Kruiver"]["E0"] / 1000,
 
-        'G0 (Robertson) [MPa]': vs_results["Robertson"]["G0"] / 1000,
-        'G0 (Mayne) [MPa]': vs_results["Mayne"]["G0"] / 1000,
-        'G0 (Zhang) [MPa]': vs_results["Zang"]["G0"] / 1000,
-        'G0 (Ahmed) [MPa]': vs_results["Ahmed"]["G0"] / 1000,
-        'G0 (Kruiver) [MPa]': vs_results["Kruiver"]["G0"] / 1000,
+        'G0 (Robertson and Cabal 2014) [MPa]': vs_results["Robertson"]["G0"] / 1000,
+        'G0 (Mayne 2007) [MPa]': vs_results["Mayne"]["G0"] / 1000,
+        'G0 (Zhang and Tong 2017) [MPa]': vs_results["Zang"]["G0"] / 1000,
+        'G0 (Ahmed 2017) [MPa]': vs_results["Ahmed"]["G0"] / 1000,
+        'G0 (Kruiver et al 2020) [MPa]': vs_results["Kruiver"]["G0"] / 1000,
     }
 
     return interpreted_data
@@ -189,7 +190,7 @@ def save_results_as_csv(cpt, cpt_dict, results_path, vs_results, polygons_L24R10
     interpreted_data = build_interpreted_data(cpt, cpt_dict, vs_results, polygons_L24R10)
 
     interpreted_df = pd.DataFrame(interpreted_data)
-    interpreted_df.to_csv(f"{results_path}/{cpt.name}_interpreted.csv", index=False)
+    interpreted_df.to_csv(f"{results_path}/{cpt.name}_interpreted.csv", index=False, encoding="utf-8")
 
 
 def add_measured_vs_data(excel_path, csv_folder_path):
@@ -228,14 +229,14 @@ def add_measured_vs_data(excel_path, csv_folder_path):
         df_sdmt.columns = ["Z from SDMT", "Vs from SDMT"]
 
         # Read existing CPT CSV
-        df_cpt = pd.read_csv(csv_file)
+        df_cpt = pd.read_csv(csv_file, encoding="utf-8")
 
         # Add the new columns to the CPT dataframe
         df_cpt["Z from SDMT"] = df_sdmt["Z from SDMT"]
         df_cpt["Vs from SDMT"] = df_sdmt["Vs from SDMT"]
 
         # Save it back (overwrite)
-        df_cpt.to_csv(csv_file, index=False)
+        df_cpt = pd.read_csv(csv_file, encoding="utf-8")
 
         print(f"[INFO] Added measured data to {file_name}")
 
