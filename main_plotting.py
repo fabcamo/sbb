@@ -86,11 +86,22 @@ single_param_list = ['qc (sbb) [kPa]', 'fs (sbb) [kPa]', 'Rf (sbb) [kPa]', 'Fr [
 for param in single_param_list:
     plot_multi_param_vs_depth(data_dict, [param], save_folder, plot_labels)
 
-# Plot the parameters as multi-parameters
+# Plot the parameters as double-parameters
 double_param_list = [['relative_density (sbb) [%]', 'relative_density (Robertson and Cabal 2014) [%]'],
                      ['Bq (sbb) [-]', 'Bq (Robertson and Cabal 2014) [-]'],
                      ['Nkt_Fr [-]', 'Nkt_Bq [-]']]
-
 # Loop through the list of parameters and plot them as double-parameters
 for param_pair in double_param_list:
     plot_multi_param_vs_depth(data_dict, param_pair, save_folder, plot_labels)
+
+# Triple parameter list
+triple_param_list = [['rho (Lengkeek 2022) [kg/m3]', 'rho_peat (Fig8 Lengkeek 2022) [kg/m3]', 'rho_Gs (Lengkeek+Robertson 2010) [kg/m3]'],
+                     ['Su (sbb) [kPa]', 'Su (Nkt_Fr) [kPa]', 'Su (Nkt_Bq) [kPa]'],
+                     ['St (sbb) [-]', 'St (Nkt_Fr) [-]', 'St (Nkt_Bq) [-]']]
+# Loop through the list of parameters and plot them as triple-parameters
+for param_triplet in triple_param_list:
+    plot_multi_param_vs_depth(data_dict, param_triplet, save_folder, plot_labels)
+
+stress_list = ['PWP_u0 [kPa]', 'PWP_u2 (sbb) [kPa]', 'sigma_v_prime [kPa]', 'sigma_v_total (Lengkeek 2022) [kPa]']
+plot_multi_param_vs_depth(data_dict, stress_list, save_folder, plot_labels)
+
