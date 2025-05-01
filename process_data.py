@@ -110,7 +110,7 @@ def build_interpreted_data(cpt, cpt_dict, vs_results, polygons_L24R10):
 
         'qc (sbb) [kPa]': np.array(cpt.tip),
         'fs (sbb) [kPa]': np.array(cpt.friction),
-        'Rf (sbb) [kPa]': cpt.friction_nbr,
+        'Rf (sbb) [%]': cpt.friction_nbr,
         'Fr [%]': cpt.Fr,
 
         'PWP_u2 (sbb) [kPa]': cpt.pore_pressure_u2 * 1000,
@@ -193,22 +193,22 @@ def save_results_as_csv(cpt, cpt_dict, results_path, vs_results, polygons_L24R10
     interpreted_df.to_csv(f"{results_path}/{cpt.name}_interpreted.csv", index=False, encoding="utf-8")
 
 
+import os
+import glob
+import pandas as pd
+
 def add_measured_vs_data(excel_path, csv_folder_path):
     """
-    Add measured Z and Vs data from SDMT Excel file into the existing interpreted CPT CSVs.
+    Add measured Z and Vs data from SCPTu Excel file into the existing interpreted CPT CSVs.
 
     Args:
         excel_path (str): Path to the Excel file (with multiple sheets).
         csv_folder_path (str): Path to folder containing the interpreted CPT CSVs.
     """
-    # Open the Excel file
     xls = pd.ExcelFile(excel_path)
     sheet_names = xls.sheet_names
 
-    # Find all CSV files
     csv_files = sorted(glob.glob(os.path.join(csv_folder_path, "*.csv")))
-
-    # Only SCPTU files
     scptu_files = [f for f in csv_files if "SCPTU" in os.path.basename(f)]
 
     print(f"[INFO] Found {len(scptu_files)} SCPTU files to process.")
@@ -216,7 +216,6 @@ def add_measured_vs_data(excel_path, csv_folder_path):
     for csv_file in scptu_files:
         file_name = os.path.basename(csv_file)
 
-        # Extract CPT number (e.g., SCPTU01)
         cpt_number = file_name.split("_")[0].replace("SCPTU", "").zfill(2)
         expected_sheet_name = f"SCPTU {cpt_number}-24 - Vs"
 
@@ -224,20 +223,21 @@ def add_measured_vs_data(excel_path, csv_folder_path):
             print(f"[ERROR] Sheet {expected_sheet_name} not found for {file_name}, skipping.")
             continue
 
-        # Read the correct sheet (skip first 4 rows, where units are)
+        # Read Z and Vs columns
         df_sdmt = pd.read_excel(excel_path, sheet_name=expected_sheet_name, skiprows=3, usecols="A:B")
-        df_sdmt.columns = ["Z from SDMT", "Vs from SDMT"]
+        df_sdmt.columns = ["Z from SCPTu [m/s]", "Vs from SCPTu [m/s]"]  # renamed here
 
-        # Read existing CPT CSV
+        # Read existing interpreted CSV
         df_cpt = pd.read_csv(csv_file, encoding="utf-8")
 
-        # Add the new columns to the CPT dataframe
-        df_cpt["Z from SDMT"] = df_sdmt["Z from SDMT"]
-        df_cpt["Vs from SDMT"] = df_sdmt["Vs from SDMT"]
+        # Add the renamed SCPTu columns
+        df_cpt["Z from SCPTu [m/s]"] = df_sdmt["Z from SCPTu [m/s]"]
+        df_cpt["Vs from SCPTu [m/s]"] = df_sdmt["Vs from SCPTu [m/s]"]
 
-        # Save it back (overwrite)
-        df_cpt = pd.read_csv(csv_file, encoding="utf-8")
+        # Overwrite original CSV
+        df_cpt.to_csv(csv_file, index=False, encoding="utf-8")
 
-        print(f"[INFO] Added measured data to {file_name}")
+        print(f"[INFO] Added SCPTu data to {file_name}")
 
-    print("[INFO] Finished adding SDMT measured data.")
+    print("[INFO] Finished adding SCPTu measured data.")
+

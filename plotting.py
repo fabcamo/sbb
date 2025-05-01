@@ -1,10 +1,11 @@
 import os
 import glob
-import pandas as pd
-import matplotlib.pyplot as plt
-import os
 import re
 import numpy as np
+import pandas as pd
+import matplotlib.pyplot as plt
+
+from matplotlib.lines import Line2D
 
 
 def load_all_csvs(csv_folder_path):
@@ -108,7 +109,84 @@ def plot_multi_param_vs_depth(data_dict, parameters, save_folder, label_dict=Non
     print(f"[INFO] Plot saved to {save_path}")
 
 
-import re
+def plot_multi_param_with_scatter(data_dict, parameters, scatter_x_col, scatter_y_col, save_folder, label_dict=None):
+    """
+    Variant of the multi-param plot that includes one optional scatter series (e.g. SDMT Vs).
+
+    Args:
+        data_dict (dict): Dictionary mapping CPT IDs to DataFrames.
+        parameters (list): Column names to plot as lines vs depth.
+        scatter_x_col (str): Name of the column for scatter x-axis values (e.g., 'Vs from SDMT').
+        scatter_y_col (str): Name of the column for scatter y-axis values (e.g., 'Z from SDMT').
+        save_folder (str): Directory to save the plot.
+        label_dict (dict): Optional dict mapping raw column names to pretty labels.
+    """
+    if not data_dict:
+        print("[ERROR] No data to plot.")
+        return
+
+    n_cpts = len(data_dict)
+    fig, axs = plt.subplots(1, n_cpts, figsize=(5 * n_cpts, 10))
+    if n_cpts == 1:
+        axs = [axs]
+
+    line_styles = ['-', '--', ':', '-.']
+    colors = plt.cm.tab10.colors
+
+    for ax, (cpt_id, df) in zip(axs, data_dict.items()):
+        if 'Depth (sbb) [m]' not in df.columns:
+            print(f"[WARNING] 'Depth (sbb) [m]' not found in {cpt_id}, skipping.")
+            continue
+
+        depth = df['Depth (sbb) [m]']
+        used_params = []
+
+        for i, param in enumerate(parameters):
+            if param not in df.columns:
+                print(f"[WARNING] {param} not found in {cpt_id}, skipping this parameter.")
+                continue
+
+            label = label_dict.get(param, param) if label_dict else param
+            values = df[param]
+            style = line_styles[i % len(line_styles)]
+            color = colors[i % len(colors)]
+
+            ax.plot(values, depth, label=label, linestyle=style, linewidth=1.5, color=color)
+            used_params.append(param)
+
+        # Optional scatter
+        if scatter_x_col in df.columns and scatter_y_col in df.columns:
+            ax.scatter(df[scatter_x_col], df[scatter_y_col],
+                       label=label_dict.get(scatter_x_col, scatter_x_col),
+                       color='black', s=300, marker='|')
+
+        # Format
+        min_depth, max_depth = depth.min(), depth.max()
+        yticks = np.arange(np.floor(min_depth), np.ceil(max_depth) + 0.5, 0.5)
+        ax.set_yticks(yticks)
+
+        ax.set_title(cpt_id.replace('_interpreted', ''), fontsize=10)
+
+        if used_params:
+            display_labels = [label_dict.get(p, p) for p in used_params]
+            xlabel = extract_common_label(display_labels)
+            ax.set_xlabel(xlabel, fontsize=10)
+        else:
+            ax.set_xlabel("Parameter value", fontsize=10)
+
+        ax.set_ylabel("Depth (m)", fontsize=10)
+        ax.grid(True, axis='y', which='major')
+        ax.invert_yaxis()
+        ax.legend(fontsize=8, loc='best')
+
+    param_clean = "_".join([re.sub(r"[^\w\-]", "_", p) for p in parameters + [scatter_x_col]])
+    plt.suptitle(f"{', '.join([label_dict.get(p, p) for p in parameters])} + scatter vs Depth", y=1.02, fontsize=12)
+    plt.tight_layout()
+    save_path = os.path.join(save_folder, f"{param_clean}_with_scatter.png")
+    plt.savefig(save_path, dpi=300, bbox_inches="tight")
+    plt.close()
+    print(f"[INFO] Plot saved to {save_path}")
+
 
 def extract_common_label(param_labels):
     """
@@ -144,3 +222,168 @@ def extract_common_label(param_labels):
 
     # Final label
     return f"{prefix} {suffix}".strip()
+
+
+def plot_lithology_columns(data_dict, lithology_column, save_folder):
+    """
+    Plot lithology (discrete classes) vs depth for all CPTs in the provided dictionary.
+
+    Args:
+        data_dict (dict): Dictionary mapping CPT names to DataFrames.
+        lithology_column (str): Column name of lithology classification.
+        save_folder (str): Path to save the figure.
+    """
+    fixed_lithology_colors = {
+        '1': 'blue',
+        '2': 'lightblue',
+        '2a': 'green',
+        '2b': 'yellowgreen',
+        '3': 'red',
+        '4': 'purple',
+        '5': 'orange',
+        '6': 'cyan',
+        '7': 'magenta',
+        '8': 'gray',
+        '9': 'black'
+    }
+
+    if not data_dict:
+        print("[ERROR] No data to plot.")
+        return
+
+    n_cpts = len(data_dict)
+    fig, axs = plt.subplots(1, n_cpts, figsize=(3 * n_cpts, 10))
+    if n_cpts == 1:
+        axs = [axs]
+
+    for ax, (cpt_id, df) in zip(axs, data_dict.items()):
+        if 'Depth (sbb) [m]' not in df.columns or lithology_column not in df.columns:
+            print(f"[WARNING] Missing required columns in {cpt_id}, skipping.")
+            continue
+
+        depth = df['Depth (sbb) [m]']
+        lithology = df[lithology_column].astype(str)
+
+        colors = [fixed_lithology_colors.get(code, 'white') for code in lithology]
+
+        ax.scatter(
+            np.zeros_like(depth),
+            depth,
+            c=colors,
+            marker='_',
+            s=600,
+            linewidths=0.5,
+        )
+
+        min_depth, max_depth = depth.min(), depth.max()
+        yticks = np.arange(np.floor(min_depth), np.ceil(max_depth) + 0.5, 0.5)
+        ax.set_yticks(yticks)
+
+        ax.set_title(cpt_id.replace('_interpreted', ''), fontsize=10)
+        ax.set_ylabel("Depth (m)", fontsize=10)
+        ax.set_xlabel("")
+        ax.set_xticks([])
+        ax.grid(True, axis='y', which='major')
+        ax.invert_yaxis()
+
+    plt.suptitle(f"{lithology_column} vs Depth for all CPTs", y=1.02, fontsize=12)
+    plt.tight_layout()
+
+    handles = [plt.Line2D([0], [0], marker='s', color=color, linestyle='', markersize=8)
+               for lith, color in fixed_lithology_colors.items()]
+    labels = [f"Zone {lith}" for lith in fixed_lithology_colors.keys()]
+    fig.legend(handles, labels, title="Zones", bbox_to_anchor=(1.05, 0.5), loc='center left')
+
+    lithology_clean = re.sub(r"[^\w\-]", "_", lithology_column)
+    save_path = os.path.join(save_folder, f"{lithology_clean}_vs_depth.png")
+    plt.savefig(save_path, dpi=300, bbox_inches="tight")
+    plt.close()
+
+    print(f"[INFO] Lithology plot saved to {save_path}")
+
+
+import matplotlib.pyplot as plt
+import numpy as np
+import os
+import re
+from matplotlib.lines import Line2D
+
+def plot_lithology_and_parameters(data_dict, cpt_id, save_folder, lithology_column, parameters, label_dict=None):
+    """
+    Create a horizontal subplot figure for a single CPT:
+    - First panel: lithology with legend (upper left)
+    - Remaining panels: parameters vs depth with legends
+    All subplots share the same Y-axis (depth), inverted to show 0 at top.
+    """
+    df = data_dict.get(cpt_id)
+    if df is None:
+        print(f"[WARNING] CPT {cpt_id} not found.")
+        return
+
+    if 'Depth (sbb) [m]' not in df.columns or lithology_column not in df.columns:
+        print(f"[WARNING] Missing required columns in {cpt_id}.")
+        return
+
+    depth = df['Depth (sbb) [m]']
+    n_panels = 1 + len(parameters)
+    fig, axs = plt.subplots(1, n_panels, figsize=(3 * n_panels, 10), sharey=True)
+
+    if n_panels == 1:
+        axs = [axs]
+
+    # --- Lithology colors ---
+    lith_colors = {
+        '1': 'blue', '2': 'lightblue', '2a': 'green', '2b': 'yellowgreen',
+        '3': 'red', '4': 'purple', '5': 'orange', '6': 'cyan',
+        '7': 'magenta', '8': 'gray', '9': 'black'
+    }
+
+    # --- Lithology subplot (axs[0]) ---
+    lith = df[lithology_column].astype(str)
+    color_values = [lith_colors.get(code, 'white') for code in lith]
+    axs[0].scatter(np.zeros_like(depth), depth, c=color_values, marker='_', s=600, linewidths=0.5)
+
+    axs[0].set_title("Lithology", fontsize=10)
+    axs[0].set_xticks([])
+    axs[0].set_xlabel("")
+    axs[0].set_ylabel("Depth (m)")
+    axs[0].grid(True, axis='y')
+    axs[0].invert_yaxis()
+    yticks = np.arange(np.floor(depth.min()), np.ceil(depth.max()) + 0.5, 0.5)
+    axs[0].set_yticks(yticks)
+
+    # --- Lithology legend (only present zones) ---
+    unique_zones = sorted(set(lith))
+    legend_elements = [
+        Line2D([0], [0], marker='s', color='w',
+               markerfacecolor=lith_colors.get(zone, 'white'),
+               label=f"Zone {zone}", markersize=8, linestyle='')
+        for zone in unique_zones if zone in lith_colors
+    ]
+    axs[0].legend(handles=legend_elements, fontsize=7, loc='upper left', title="Zones", title_fontsize=8)
+
+    # --- Parameter subplots with legends ---
+    for i, param in enumerate(parameters):
+        ax = axs[i + 1]
+        if param not in df.columns:
+            ax.set_visible(False)
+            continue
+
+        values = df[param]
+        label = label_dict.get(param, param) if label_dict else param
+        ax.plot(values, depth, color='tab:blue', lw=1.5, label=label)
+        ax.set_title(label, fontsize=10)
+        ax.set_xlabel(label, fontsize=9)
+        ax.grid(True, axis='y')
+        #ax.invert_yaxis()
+        ax.legend(fontsize=7, loc="best")
+
+    # --- Save figure ---
+    fig.suptitle(f"{cpt_id}", fontsize=12, y=1.02)
+    plt.tight_layout()
+    clean_id = re.sub(r"[^\w\-]", "_", cpt_id)
+    fname = f"{clean_id}_profile.png"
+    save_path = os.path.join(save_folder, fname)
+    plt.savefig(save_path, dpi=300, bbox_inches="tight")
+    plt.close()
+    print(f"[INFO] Saved horizontal profile for {cpt_id} → {save_path}")
