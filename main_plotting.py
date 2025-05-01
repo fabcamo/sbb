@@ -57,7 +57,7 @@ def run_all_plots_for_folder(csv_folder, save_folder, label_dict):
     params_to_plot = [
         'rho (Lengkeek 2022) [kg/m3]', 'Vs (Ahmed 2017) [m/s]',
         'psi (Plewes et al 1992) [-]', 'Su (sbb) [kPa]',
-        'qc (sbb) [kPa]', 'Rf (sbb) [kPa]',
+        'qc (sbb) [kPa]', 'Rf (sbb) [%]',
     ]
     for cpt_id in data_dict:
         plot_lithology_and_parameters(data_dict, cpt_id, save_folder,
