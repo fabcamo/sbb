@@ -121,10 +121,10 @@ def build_interpreted_data(cpt, cpt_dict, vs_results, polygons_L24R10):
 
         'rho (Lengkeek 2022) [kg/m3]': cpt.rho,
         'rho_peat (Fig8 Lengkeek 2022) [kg/m3]': (calc_peat_gamma_Lengkeek(cpt, lithology_L24R10) * 1000) / cpt.g,
-        'rho_Gs (Lengkeek+Robertson2010) [kg/m3]': (calc_gamma_from_Lengkeek_Gs(cpt) * 1000) / cpt.g,
+        'rho_Gs (Lengkeek+Robertson 2010) [kg/m3]': (calc_gamma_from_Lengkeek_Gs(cpt) * 1000) / cpt.g,
 
         'relative_density (sbb) [%]': cpt_dict.get(cpt_key, {}).get('Id', np.nan),
-        'relative_density [%]': cpt.relative_density,
+        'relative_density (Robertson and Cabal 2014) [%]': cpt.relative_density,
 
         'qt [kPa]': cpt.qt,
         'qn [kPa]': calc_qn(cpt),
@@ -137,7 +137,7 @@ def build_interpreted_data(cpt, cpt_dict, vs_results, polygons_L24R10):
         'lithology (Lengkeek 2024)': lithology_L24R10,
 
         'Bq (sbb) [-]': cpt_dict.get(cpt_key, {}).get('Bq', np.nan),
-        'Bq_calc [-]': calc_Bq(cpt),
+        'Bq (Robertson and Cabal 2014) [-]': calc_Bq(cpt),
 
         'Nkt_Fr [-]': Nkt_Fr,
         'Nkt_Bq [-]': Nkt_Bq,
