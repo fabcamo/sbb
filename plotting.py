@@ -302,18 +302,13 @@ def plot_lithology_columns(data_dict, lithology_column, save_folder):
     print(f"[INFO] Lithology plot saved to {save_path}")
 
 
-import matplotlib.pyplot as plt
-import numpy as np
-import os
-import re
-from matplotlib.lines import Line2D
-
-def plot_lithology_and_parameters(data_dict, cpt_id, save_folder, lithology_column, parameters, label_dict=None):
+def plot_lithology_and_parameters(data_dict, cpt_id, save_folder, lithology_column, parameters, label_dict=None,
+                                  layering_df=None):
     """
     Create a horizontal subplot figure for a single CPT:
-    - First panel: lithology with legend (upper left)
+    - First panel: lithology with legend
     - Remaining panels: parameters vs depth with legends
-    All subplots share the same Y-axis (depth), inverted to show 0 at top.
+    - Adds horizontal reference lines from layering_df
     """
     df = data_dict.get(cpt_id)
     if df is None:
@@ -330,6 +325,22 @@ def plot_lithology_and_parameters(data_dict, cpt_id, save_folder, lithology_colu
 
     if n_panels == 1:
         axs = [axs]
+
+    # Parse cpt_id to get cpt_name and site
+    try:
+        cpt_name, site = cpt_id.split("_")[:2]
+    except ValueError:
+        cpt_name, site = "", ""
+
+    # Extract horizontal line depths from layering_df
+    horiz_depths = []
+    if layering_df is not None:
+        match = layering_df[
+            (layering_df["cpt_name"].str.lower() == cpt_name.lower()) &
+            (layering_df["site"].str.lower() == site.lower())
+            ]
+        if not match.empty:
+            horiz_depths = [float(val.strip()) for val in match["horiz_lines"].iloc[0].split(",")]
 
     # --- Lithology colors ---
     lith_colors = {
@@ -351,6 +362,10 @@ def plot_lithology_and_parameters(data_dict, cpt_id, save_folder, lithology_colu
     axs[0].invert_yaxis()
     yticks = np.arange(np.floor(depth.min()), np.ceil(depth.max()) + 0.5, 0.5)
     axs[0].set_yticks(yticks)
+
+    # Horizontal lines on lithology panel
+    for h in horiz_depths:
+        axs[0].axhline(h, color='black', linestyle='--', linewidth=0.8)
 
     # --- Lithology legend (only present zones) ---
     unique_zones = sorted(set(lith))
@@ -375,8 +390,12 @@ def plot_lithology_and_parameters(data_dict, cpt_id, save_folder, lithology_colu
         ax.set_title(label, fontsize=10)
         ax.set_xlabel(label, fontsize=9)
         ax.grid(True, axis='y')
-        #ax.invert_yaxis()
+        ax.invert_yaxis()
         ax.legend(fontsize=7, loc="best")
+
+        # Add same horizontal lines
+        for h in horiz_depths:
+            ax.axhline(h, color='black', linestyle='--', linewidth=0.8)
 
     # --- Save figure ---
     fig.suptitle(f"{cpt_id}", fontsize=12, y=1.02)

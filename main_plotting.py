@@ -1,4 +1,4 @@
-from main_processing import chavornay_results_path
+import pandas as pd
 from plotting import load_all_csvs, plot_multi_param_vs_depth, plot_multi_param_with_scatter, plot_lithology_columns
 from plotting import plot_lithology_and_parameters
 
@@ -60,10 +60,13 @@ def run_all_plots_for_folder(csv_folder, save_folder, label_dict):
         'qc (sbb) [kPa]', 'Rf (sbb) [%]',
     ]
     for cpt_id in data_dict:
-        plot_lithology_and_parameters(data_dict, cpt_id, save_folder,
-                                      lithology_column='lithology (Lengkeek 2024)',
-                                      parameters=params_to_plot,
-                                      label_dict=label_dict)
+        plot_lithology_and_parameters(
+            data_dict, cpt_id, save_folder,
+            lithology_column='lithology (Lengkeek 2024)',
+            parameters=params_to_plot,
+            label_dict=label_dict,
+            layering_df=layering_df
+        )
 
 
 plot_labels = {
@@ -139,6 +142,9 @@ plot_labels = {
 bavois_results_folder = r"c:\Users\camposmo\OneDrive - Stichting Deltares\Desktop\Geotechnical site investigations\results\bavois"
 chavornay_results_folder = r"c:\Users\camposmo\OneDrive - Stichting Deltares\Desktop\Geotechnical site investigations\results\chavornay"
 ependes_results_folder = r"c:\Users\camposmo\OneDrive - Stichting Deltares\Desktop\Geotechnical site investigations\results\ependes"
+layering_csv_path = r"c:\Users\camposmo\OneDrive - Stichting Deltares\Desktop\Geotechnical site investigations\results\layering.csv"
+
+layering_df = pd.read_csv(layering_csv_path)
 
 folders = [bavois_results_folder, chavornay_results_folder, ependes_results_folder]
 
