@@ -73,6 +73,32 @@ def initialize_cpt_objects(cpt_dict: dict, metadata_df: pd.DataFrame, site_name:
     return cpt_objects
 
 
+def calc_Poisson_below_gwl(cpt: GefCpt) -> float:
+    """
+    If the measurement is below the ground water level, replace whatever poisson ratio with 0.495, If it is above,
+    keep the original value.
+
+    Params:
+        cpt (GefCpt): The CPT object.
+
+    Returns:
+        poisson_gwl (float): The Poisson ratio corrected by the ground water level.
+    """
+    # Get the original Poisson ratio
+    poisson = cpt.poisson
+    # Get the depth of the CPT
+    depth = cpt.depth
+    # Get the ground water level
+    gwl = cpt.pwp
+    # Get the depth to reference
+    depth_to_ref = cpt.depth_to_reference
+
+    # For every depth to reference, check if it is above or below the ground water level
+    poisson_gwl = np.where(depth_to_ref < gwl, 0.495, poisson)
+
+    return poisson_gwl
+
+
 def build_interpreted_data(cpt, cpt_dict, vs_results, polygons_L24R10):
     """
     Build the interpreted data dictionary ready for saving.
@@ -159,6 +185,8 @@ def build_interpreted_data(cpt, cpt_dict, vs_results, polygons_L24R10):
         'Vs (Ahmed 2017) [m/s]': vs_results["Ahmed"]["vs"],
         'Vs (Kruiver et al 2020) [m/s]': vs_results["Kruiver"]["vs"],
 
+        'Poisson (Mayne 2007) [-]': cpt.poisson,
+
         'E0 (Robertson and Cabal 2014) [MPa]': vs_results["Robertson"]["E0"] / 1000,
         'E0 (Mayne 2007) [MPa]': vs_results["Mayne"]["E0"] / 1000,
         'E0 (Zhang and Tong 2017) [MPa]': vs_results["Zang"]["E0"] / 1000,
@@ -170,6 +198,9 @@ def build_interpreted_data(cpt, cpt_dict, vs_results, polygons_L24R10):
         'G0 (Zhang and Tong 2017) [MPa]': vs_results["Zang"]["G0"] / 1000,
         'G0 (Ahmed 2017) [MPa]': vs_results["Ahmed"]["G0"] / 1000,
         'G0 (Kruiver et al 2020) [MPa]': vs_results["Kruiver"]["G0"] / 1000,
+
+        'Ground water level [m]': cpt.pwp,
+        'Poisson ratio gwl [-]': calc_Poisson_below_gwl(cpt),
     }
 
     return interpreted_data
