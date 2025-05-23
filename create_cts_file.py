@@ -2,6 +2,7 @@ import os
 import glob
 import pandas as pd
 
+
 def get_layer_bounds(layer_string: str, max_depth: float) -> list[tuple[float, float]]:
     """
     Convert a comma-separated string of depths into layer boundaries.
@@ -91,7 +92,7 @@ def process_cpt_file(csv_path: str, layering_df: pd.DataFrame, method: str = "me
     match = layering_df[
         (layering_df["cpt_name"].str.lower() == cpt_name.lower()) &
         (layering_df["site"].str.lower() == site.lower())
-    ]
+        ]
     if match.empty:
         print(f"[WARNING] No layering data for {cpt_name} at {site}")
         return []
@@ -102,11 +103,10 @@ def process_cpt_file(csv_path: str, layering_df: pd.DataFrame, method: str = "me
         stats = compute_layer_stats(df, top, bottom, method=method)
         results.append({
             "Name": cpt_name,
-            "Layer": f"layer{i+1}",
+            "Layer": f"layer{i + 1}",
             **stats
         })
     return results
-
 
 
 # === USER CONFIG ===

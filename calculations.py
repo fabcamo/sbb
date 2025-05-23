@@ -399,8 +399,8 @@ def calc_gamma_from_Lengkeek_Gs(cpt: GefCpt) -> np.ndarray:
     Lengkeek_Gs = (-0.147 * cpt.friction_nbr) + 2.88
 
     gamma_Gs = (0.27 * np.log10(cpt.friction_nbr)
-                                   + 0.36 * np.log10(np.array(cpt.qt) / cpt.Pa)
-                                   + 1.236) * (Lengkeek_Gs / 2.65) * 9.81
+                + 0.36 * np.log10(np.array(cpt.qt) / cpt.Pa)
+                + 1.236) * (Lengkeek_Gs / 2.65) * 9.81
 
     # When Rf is 0, set gamma_Gs to NaN
     gamma_Gs[cpt.friction_nbr == 0] = np.nan

@@ -25,7 +25,8 @@ def run_all_plots_for_folder(csv_folder, save_folder, label_dict):
 
     # Triple parameter plots
     triple_param_list = [
-        ['rho (Lengkeek 2022) [kg/m3]', 'rho_peat (Fig8 Lengkeek 2022) [kg/m3]', 'rho_Gs (Lengkeek+Robertson 2010) [kg/m3]'],
+        ['rho (Lengkeek 2022) [kg/m3]', 'rho_peat (Fig8 Lengkeek 2022) [kg/m3]',
+         'rho_Gs (Lengkeek+Robertson 2010) [kg/m3]'],
         ['Su (sbb) [kPa]', 'Su (Nkt_Fr) [kPa]', 'Su (Nkt_Bq) [kPa]'],
         ['St (sbb) [-]', 'St (Nkt_Fr) [-]', 'St (Nkt_Bq) [-]']
     ]
@@ -136,7 +137,6 @@ plot_labels = {
     'G0 (Ahmed 2017) [MPa]': "G₀ (Ahmed) [MPa]",
     'G0 (Kruiver et al 2020) [MPa]': "G₀ (Kruiver) [MPa]",
 }
-
 
 # Paths
 bavois_results_folder = r"c:\Users\camposmo\OneDrive - Stichting Deltares\Desktop\Geotechnical site investigations\results\bavois"

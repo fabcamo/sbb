@@ -31,7 +31,6 @@ bavois_results_path = r'c:\Users\camposmo\OneDrive - Stichting Deltares\Desktop\
 chavornay_results_path = r'c:\Users\camposmo\OneDrive - Stichting Deltares\Desktop\Geotechnical site investigations\results\chavornay'
 ependes_results_path = r'c:\Users\camposmo\OneDrive - Stichting Deltares\Desktop\Geotechnical site investigations\results\ependes'
 
-
 ########################################################################################################################
 # 2. Load the data
 #########################################################################################################################
@@ -55,7 +54,6 @@ with open(L24R10_path, "rb") as f:
 
 # List of predefined colors for the zones
 colors = ['blue', 'red', 'green', 'purple', 'orange', 'yellow', 'cyan', 'magenta', 'black', 'grey']
-
 
 ########################################################################################################################
 # 3. Process the data

@@ -187,17 +187,17 @@ def build_interpreted_data(cpt, cpt_dict, vs_results, polygons_L24R10):
 
         'Poisson (Mayne 2007) [-]': cpt.poisson,
 
-        'E0 (Robertson and Cabal 2014) [MPa]': vs_results["Robertson"]["E0"] / 1000,
-        'E0 (Mayne 2007) [MPa]': vs_results["Mayne"]["E0"] / 1000,
-        'E0 (Zhang and Tong 2017) [MPa]': vs_results["Zang"]["E0"] / 1000,
-        'E0 (Ahmed 2017) [MPa]': vs_results["Ahmed"]["E0"] / 1000,
-        'E0 (Kruiver et al 2020) [MPa]': vs_results["Kruiver"]["E0"] / 1000,
+        'E0 (Robertson and Cabal 2014) [KPa]': vs_results["Robertson"]["E0"] / 1000,
+        'E0 (Mayne 2007) [KPa]': vs_results["Mayne"]["E0"] / 1000,
+        'E0 (Zhang and Tong 2017) [KPa]': vs_results["Zang"]["E0"] / 1000,
+        'E0 (Ahmed 2017) [KPa]': vs_results["Ahmed"]["E0"] / 1000,
+        'E0 (Kruiver et al 2020) [KPa]': vs_results["Kruiver"]["E0"] / 1000,
 
-        'G0 (Robertson and Cabal 2014) [MPa]': vs_results["Robertson"]["G0"] / 1000,
-        'G0 (Mayne 2007) [MPa]': vs_results["Mayne"]["G0"] / 1000,
-        'G0 (Zhang and Tong 2017) [MPa]': vs_results["Zang"]["G0"] / 1000,
-        'G0 (Ahmed 2017) [MPa]': vs_results["Ahmed"]["G0"] / 1000,
-        'G0 (Kruiver et al 2020) [MPa]': vs_results["Kruiver"]["G0"] / 1000,
+        'G0 (Robertson and Cabal 2014) [KPa]': vs_results["Robertson"]["G0"] / 1000,
+        'G0 (Mayne 2007) [KPa]': vs_results["Mayne"]["G0"] / 1000,
+        'G0 (Zhang and Tong 2017) [KPa]': vs_results["Zang"]["G0"] / 1000,
+        'G0 (Ahmed 2017) [KPa]': vs_results["Ahmed"]["G0"] / 1000,
+        'G0 (Kruiver et al 2020) [KPa]': vs_results["Kruiver"]["G0"] / 1000,
 
         'Ground water level [m]': cpt.pwp,
         'Poisson ratio gwl [-]': calc_Poisson_below_gwl(cpt),
@@ -223,10 +223,6 @@ def save_results_as_csv(cpt, cpt_dict, results_path, vs_results, polygons_L24R10
     interpreted_df = pd.DataFrame(interpreted_data)
     interpreted_df.to_csv(f"{results_path}/{cpt.name}_interpreted.csv", index=False, encoding="utf-8")
 
-
-import os
-import glob
-import pandas as pd
 
 def add_measured_vs_data(excel_path, csv_folder_path):
     """
@@ -271,4 +267,3 @@ def add_measured_vs_data(excel_path, csv_folder_path):
         print(f"[INFO] Added SCPTu data to {file_name}")
 
     print("[INFO] Finished adding SCPTu measured data.")
-
