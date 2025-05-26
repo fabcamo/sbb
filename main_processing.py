@@ -11,25 +11,25 @@ from process_data import initialize_cpt_objects, save_results_as_csv, add_measur
 # 1. Define the relevant paths
 ########################################################################################################################
 # Pickled files with the CPT data
-bavois_pickle = r"c:\Users\camposmo\OneDrive - Stichting Deltares\Desktop\Geotechnical site investigations\L210_22400-26400_Bavois site investigation\CPT\cpt_bavois.pkl"
-chavornay_pickle = r"c:\Users\camposmo\OneDrive - Stichting Deltares\Desktop\Geotechnical site investigations\L210_28200-33000_Chavornay-Ependes site investigation\CPT\cpt_chavornay.pkl"
-ependes_pickle = r"c:\Users\camposmo\OneDrive - Stichting Deltares\Desktop\Geotechnical site investigations\L210_33000-37500_Ependes-Yverdon site investigation\CPT Roh-Daten\cpt_ependes.pkl"
+bavois_pickle = r"N:\Projects\11211500\11211717\F. Other information\Data from SBB\Geotechnical site investigations\L210_22400-26400_Bavois site investigation\CPT\cpt_bavois.pkl"
+chavornay_pickle = r"N:\Projects\11211500\11211717\F. Other information\Data from SBB\Geotechnical site investigations\L210_28200-33000_Chavornay-Ependes site investigation\CPT\cpt_chavornay.pkl"
+ependes_pickle = r"N:\Projects\11211500\11211717\F. Other information\Data from SBB\Geotechnical site investigations\L210_33000-37500_Ependes-Yverdon site investigation\CPT Roh-Daten\cpt_ependes.pkl"
 
 # Metadata path
-metadata_path = r"c:\Users\camposmo\OneDrive - Stichting Deltares\Desktop\Geotechnical site investigations\cpt_metadata.csv"
+metadata_path = r"N:\Projects\11211500\11211717\F. Other information\Data from SBB\Geotechnical site investigations\cpt_metadata.csv"
 
 #  Paths for the pickel files containing the Lengkeek (2024) classification
-L24R10_path = r"c:\Users\camposmo\OneDrive - Stichting Deltares\Desktop\Geotechnical site investigations\polygons_L24R10.pkl"
+L24R10_path = r"N:\Projects\11211500\11211717\F. Other information\Lengkeek2024_polygons\polygons_L24R10.pkl"
 
 # Shear wave measurements in the SCPT path
-SCPTu_bavois_path = r"c:\Users\camposmo\OneDrive - Stichting Deltares\Desktop\Geotechnical site investigations\L210_22400-26400_Bavois site investigation\CPT\SDMT Report.xlsx"
-SCPTu_chavornay_path = r"c:\Users\camposmo\OneDrive - Stichting Deltares\Desktop\Geotechnical site investigations\L210_28200-33000_Chavornay-Ependes site investigation\CPT\SCPTU Werte.xlsx"
-SCPTu_ependes_path = r"c:\Users\camposmo\OneDrive - Stichting Deltares\Desktop\Geotechnical site investigations\L210_33000-37500_Ependes-Yverdon site investigation\CPT Roh-Daten\SCPTu VS summary.xlsx"
+SCPTu_bavois_path = r"N:\Projects\11211500\11211717\F. Other information\Data from SBB\Geotechnical site investigations\L210_22400-26400_Bavois site investigation\CPT\SDMT Report.xlsx"
+SCPTu_chavornay_path = r"N:\Projects\11211500\11211717\F. Other information\Data from SBB\Geotechnical site investigations\L210_28200-33000_Chavornay-Ependes site investigation\CPT\SCPTU Werte.xlsx"
+SCPTu_ependes_path = r"N:\Projects\11211500\11211717\F. Other information\Data from SBB\Geotechnical site investigations\L210_33000-37500_Ependes-Yverdon site investigation\CPT Roh-Daten\SCPTu VS summary.xlsx"
 
 # Save results path
-bavois_results_path = r'c:\Users\camposmo\OneDrive - Stichting Deltares\Desktop\Geotechnical site investigations\results\bavois'
-chavornay_results_path = r'c:\Users\camposmo\OneDrive - Stichting Deltares\Desktop\Geotechnical site investigations\results\chavornay'
-ependes_results_path = r'c:\Users\camposmo\OneDrive - Stichting Deltares\Desktop\Geotechnical site investigations\results\ependes'
+bavois_results_path = r"N:\Projects\11211500\11211717\B. Measurements and calculations\cpt_results\bavois"
+chavornay_results_path = r"N:\Projects\11211500\11211717\B. Measurements and calculations\cpt_results\chavornay"
+ependes_results_path = r"N:\Projects\11211500\11211717\B. Measurements and calculations\cpt_results\ependes"
 
 ########################################################################################################################
 # 2. Load the data
@@ -83,7 +83,6 @@ for cpt in cpt_bavois_list:
 # Process the Chavornay CPTs
 for cpt in cpt_chavornay_list:
     # pre-process the CPT
-    cpt.pre_process_data()
     cpt.pre_process_data()
     # 1. Calculate Vs first (safe copies)
     vs_list = calculate_vs_with_different_methods(cpt, interpreter)

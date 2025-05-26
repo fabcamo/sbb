@@ -1,10 +1,23 @@
+import os
 import pandas as pd
 from plotting import load_all_csvs, plot_multi_param_vs_depth, plot_multi_param_with_scatter, plot_lithology_columns
-from plotting import plot_lithology_and_parameters
+from plotting import plot_lithology_and_parameters, plot_lithology_by_distance, plot_lithology_simple_by_distance
+from process_data import sort_CPT_by_coordinates, calculate_distance
 
 
 def run_all_plots_for_folder(csv_folder, save_folder, label_dict):
-    data_dict = load_all_csvs(csv_folder)
+    """
+    Run all plotting functions for a given folder containing CSV files.
+
+    Args:
+        csv_folder (str): Path to the folder containing CSV files.
+        save_folder (str): Path to the folder where plots will be saved.
+        label_dict (dict): Dictionary mapping column names to plot labels.
+
+    Returns:
+        None
+    """
+    # Load all CSV files from the folder    data_dict = load_all_csvs(csv_folder)
 
     # Single parameter plots
     single_param_list = [
@@ -51,8 +64,9 @@ def run_all_plots_for_folder(csv_folder, save_folder, label_dict):
                                   label_dict=label_dict)
 
     # Lithology
-    plot_lithology_columns(data_dict, 'lithology (Robertson and Cabal 2010)', save_folder)
-    plot_lithology_columns(data_dict, 'lithology (Lengkeek 2024)', save_folder)
+    plot_lithology_columns(data_dict, 'lithology (Robertson and Cabal 2010)', 'Depth (sbb) [m]', save_folder)
+    plot_lithology_columns(data_dict, 'lithology (Lengkeek 2024)','Depth (sbb) [m]', save_folder)
+    plot_lithology_columns(data_dict, 'lithology (Lengkeek 2024)','Depth_to_reference [m]', save_folder)
 
     # Composite plots per CPT
     params_to_plot = [
@@ -139,14 +153,54 @@ plot_labels = {
 }
 
 # Paths
-bavois_results_folder = r"c:\Users\camposmo\OneDrive - Stichting Deltares\Desktop\Geotechnical site investigations\results\bavois"
-chavornay_results_folder = r"c:\Users\camposmo\OneDrive - Stichting Deltares\Desktop\Geotechnical site investigations\results\chavornay"
-ependes_results_folder = r"c:\Users\camposmo\OneDrive - Stichting Deltares\Desktop\Geotechnical site investigations\results\ependes"
+bavois_results_folder = r"N:\Projects\11211500\11211717\B. Measurements and calculations\cpt_results\bavois\cpt_data_res"
+chavornay_results_folder = r"N:\Projects\11211500\11211717\B. Measurements and calculations\cpt_results\chavornay\cpt_data_res"
+ependes_results_folder = r"N:\Projects\11211500\11211717\B. Measurements and calculations\cpt_results\ependes\cpt_data_res"
+# Layering CSV path
 layering_csv_path = r"c:\Users\camposmo\OneDrive - Stichting Deltares\Desktop\Geotechnical site investigations\results\layering.csv"
+# Metadata path
+metadata_path = r"N:\Projects\11211500\11211717\F. Other information\Data from SBB\Geotechnical site investigations\cpt_metadata.csv"
 
 layering_df = pd.read_csv(layering_csv_path)
 
 folders = [bavois_results_folder, chavornay_results_folder, ependes_results_folder]
 
+
+
+# Load and sort metadata once
+metadata_df = sort_CPT_by_coordinates(metadata_path, "E-W")
+
 for folder in folders:
-    run_all_plots_for_folder(folder, folder, plot_labels)
+    site = os.path.basename(os.path.dirname(folder)).lower()  # <-- FIXED HERE
+    data_dict = load_all_csvs(folder)
+
+    site_metadata = metadata_df[metadata_df['site'].str.lower() == site]
+    if site_metadata.empty:
+        print(f"[WARNING] No metadata found for site: {site}")
+        continue
+
+    print(f"\n[INFO] Processing site: {site}")
+
+    # run_all_plots_for_folder(
+    #     data_dict=data_dict,
+    #     save_folder=folder,
+    #     label_dict=plot_labels,
+    #     layering_df=layering_df
+    # )
+
+    plot_lithology_by_distance(
+        data_dict=data_dict,
+        metadata_df=site_metadata,
+        depth_column="Depth_to_reference [m]",
+        lithology_column="lithology (Lengkeek 2024)",
+        layering_df=layering_df,
+        save_path=os.path.join(folder, "lithology_distance_plot_with_layers.png")
+    )
+
+    plot_lithology_simple_by_distance(
+        data_dict=data_dict,
+        metadata_df=site_metadata,
+        depth_column="Depth_to_reference [m]",
+        lithology_column="lithology (Lengkeek 2024)",
+        save_path=os.path.join(folder, "lithology_simple_distance_plot.png")
+    )

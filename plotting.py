@@ -6,6 +6,9 @@ import pandas as pd
 import matplotlib.pyplot as plt
 
 from matplotlib.lines import Line2D
+from matplotlib.cm import get_cmap
+
+from process_data import calculate_distance, sort_CPT_by_coordinates
 
 
 def load_all_csvs(csv_folder_path):
@@ -224,7 +227,7 @@ def extract_common_label(param_labels):
     return f"{prefix} {suffix}".strip()
 
 
-def plot_lithology_columns(data_dict, lithology_column, save_folder):
+def plot_lithology_columns(data_dict, lithology_column, depth_column, save_folder):
     """
     Plot lithology (discrete classes) vs depth for all CPTs in the provided dictionary.
 
@@ -261,7 +264,7 @@ def plot_lithology_columns(data_dict, lithology_column, save_folder):
             print(f"[WARNING] Missing required columns in {cpt_id}, skipping.")
             continue
 
-        depth = df['Depth (sbb) [m]']
+        depth = df[depth_column]
         lithology = df[lithology_column].astype(str)
 
         colors = [fixed_lithology_colors.get(code, 'white') for code in lithology]
@@ -295,7 +298,7 @@ def plot_lithology_columns(data_dict, lithology_column, save_folder):
     fig.legend(handles, labels, title="Zones", bbox_to_anchor=(1.05, 0.5), loc='center left')
 
     lithology_clean = re.sub(r"[^\w\-]", "_", lithology_column)
-    save_path = os.path.join(save_folder, f"{lithology_clean}_vs_depth.png")
+    save_path = os.path.join(save_folder, f"{lithology_clean}_vs_{depth_column}.png")
     plt.savefig(save_path, dpi=300, bbox_inches="tight")
     plt.close()
 
@@ -309,6 +312,18 @@ def plot_lithology_and_parameters(data_dict, cpt_id, save_folder, lithology_colu
     - First panel: lithology with legend
     - Remaining panels: parameters vs depth with legends
     - Adds horizontal reference lines from layering_df
+
+    Args:
+        data_dict (dict): Dictionary mapping CPT IDs to DataFrames.
+        cpt_id (str): The CPT ID to plot.
+        save_folder (str): Directory to save the figure.
+        lithology_column (str): Column name for lithology classification.
+        parameters (list): List of parameter names to plot against depth.
+        label_dict (dict, optional): Mapping of parameter names to display labels.
+        layering_df (pd.DataFrame, optional): DataFrame with horizontal reference lines for the CPT.
+
+    Returns:
+        None
     """
     df = data_dict.get(cpt_id)
     if df is None:
@@ -406,3 +421,194 @@ def plot_lithology_and_parameters(data_dict, cpt_id, save_folder, lithology_colu
     plt.savefig(save_path, dpi=300, bbox_inches="tight")
     plt.close()
     print(f"[INFO] Saved horizontal profile for {cpt_id} → {save_path}")
+
+
+import matplotlib.pyplot as plt
+import numpy as np
+from matplotlib.lines import Line2D
+
+
+import os
+import numpy as np
+import matplotlib.pyplot as plt
+from matplotlib.lines import Line2D
+
+def plot_lithology_by_distance(data_dict, metadata_df, depth_column, lithology_column, layering_df, save_path):
+    """
+    Plot all CPTs in a single subplot with lithology vs depth, spaced by horizontal distance.
+    Overlay black dots at manually defined layer boundaries from layering_df.
+    """
+    import numpy as np
+    import matplotlib.pyplot as plt
+    from matplotlib.lines import Line2D
+
+    fixed_lithology_colors = {
+        '1': 'blue', '2': 'lightblue', '2a': 'green', '2b': 'yellowgreen',
+        '3': 'red', '4': 'purple', '5': 'orange', '6': 'cyan',
+        '7': 'magenta', '8': 'gray', '9': 'black'
+    }
+
+    if not data_dict or metadata_df.empty:
+        print("[ERROR] No data or metadata to plot.")
+        return
+
+    base_coords = metadata_df.iloc[0][['E', 'N']]
+    plt.figure(figsize=(16, 8))
+    ax = plt.gca()
+
+    for _, row in metadata_df.iterrows():
+        base_name = row["name"]
+        site = row["site"]
+        matching_key = next((k for k in data_dict if k.startswith(base_name)), None)
+        if not matching_key:
+            print(f"[SKIP] No match for {base_name}")
+            continue
+
+        df = data_dict[matching_key]
+        if depth_column not in df.columns or lithology_column not in df.columns:
+            print(f"[SKIP] {matching_key}: missing columns")
+            continue
+
+        depth = df[depth_column].dropna()
+        lith = df[lithology_column].astype(str)
+        if depth.empty:
+            print(f"[SKIP] {matching_key}: empty depth")
+            continue
+
+        colors = [fixed_lithology_colors.get(z, 'white') for z in lith]
+        dist = np.sqrt((row["E"] - base_coords["E"]) ** 2 + (row["N"] - base_coords["N"]) ** 2)
+
+        ax.scatter(np.full_like(depth, dist), depth, c=colors, marker='_', s=600, linewidths=0.5)
+        ax.text(dist, depth.min() - 1, base_name, ha='center', fontsize=8, rotation=90)
+
+        # Draw black dots at manual layer boundaries (converted to depth_to_reference)
+        layer_match = layering_df[
+            (layering_df['site'].str.lower() == site.lower()) &
+            (layering_df['cpt_name'].str.lower() == base_name.lower())
+            ]
+        if not layer_match.empty:
+            try:
+                # Parse depths in sbb reference (positive down from surface)
+                manual_depths = [float(d.strip()) for d in layer_match.iloc[0]['horiz_lines'].split(',')]
+
+                # Get surface elevation from metadata
+                elev_row = metadata_df[metadata_df['name'].str.lower() == base_name.lower()]
+                if not elev_row.empty:
+                    elev = elev_row.iloc[0]['elev_cpt']
+                    converted_depths = [elev - d for d in manual_depths]  # Now in depth_to_reference
+                    ax.scatter(np.full(len(converted_depths), dist), converted_depths, color='black', s=20, zorder=10)
+            except Exception as e:
+                print(f"[WARNING] Failed to convert layer depths for {base_name}: {e}")
+
+    # Format axis
+    ax.set_xlabel("Distance from first CPT (m)")
+    ax.set_ylabel("Depth (m)")
+    ax.set_title(f"{lithology_column} vs Distance", fontsize=14)
+    #ax.invert_yaxis()
+    ax.grid(axis='y')
+
+    # Legend
+    handles = [Line2D([0], [0], color=color, lw=4, label=f"Zone {code}")
+               for code, color in fixed_lithology_colors.items()]
+    handles.append(Line2D([0], [0], marker='o', color='black', linestyle='', label="Layer boundary", markersize=5))
+    ax.legend(handles=handles, title="Legend", bbox_to_anchor=(1.05, 1), loc='upper left')
+
+    plt.tight_layout()
+    plt.savefig(save_path, dpi=300, bbox_inches="tight")
+    plt.close()
+    print(f"[INFO] Saved lithology-by-distance plot → {save_path}")
+
+
+
+import numpy as np
+import matplotlib.pyplot as plt
+from matplotlib.lines import Line2D
+
+def plot_lithology_simple_by_distance(data_dict, metadata_df, depth_column, lithology_column, save_path):
+    """
+    Plot simplified lithology zones across CPTs as a function of horizontal distance and depth.
+
+    Args:
+        data_dict (dict): Dictionary of CPT data keyed by file names.
+        metadata_df (pd.DataFrame): DataFrame with at least columns ['name', 'E', 'N'].
+        depth_column (str): Name of depth column in each CPT file.
+        lithology_column (str): Name of lithology column in each CPT file.
+        save_path (str): Path to save the output figure.
+    """
+
+    lithology_merge_map = {
+        '1': 'zone 1',
+        '2': 'zone 2a',  # if needed
+        '2a': 'zone 2a',
+        '2b': 'zone 2b',
+        '3': 'zone 3-4',
+        '4': 'zone 3-4',
+        '5': 'zone 5-6-7',
+        '6': 'zone 5-6-7',
+        '7': 'zone 5-6-7',
+        '8': 'zone 8-9',
+        '9': 'zone 8-9'
+    }
+
+    combined_zone_colors = {
+        "zone 1": "black",
+        "zone 2a": "brown",
+        "zone 2b": "lightgreen",
+        "zone 3-4": "green",
+        "zone 5-6-7": "gold",
+        "zone 8-9": "grey"
+    }
+
+    if not data_dict or metadata_df.empty:
+        print("[ERROR] No data or metadata to plot.")
+        return
+
+    base_coords = metadata_df.iloc[0][['E', 'N']]
+    plt.figure(figsize=(16, 8))
+    ax = plt.gca()
+
+    for _, row in metadata_df.iterrows():
+        base_name = row["name"]
+        matching_key = next((k for k in data_dict if k.startswith(base_name)), None)
+        if not matching_key:
+            print(f"[SKIP] No match for {base_name}")
+            continue
+
+        df = data_dict[matching_key]
+        if depth_column not in df.columns or lithology_column not in df.columns:
+            print(f"[SKIP] {matching_key}: missing columns")
+            continue
+
+        depth = df[depth_column].dropna()
+        raw_lith = df[lithology_column].astype(str)
+        if depth.empty or raw_lith.empty:
+            print(f"[SKIP] {matching_key}: empty depth or lithology")
+            continue
+
+        # Map raw lithology codes to simplified zones
+        simplified_zones = [lithology_merge_map.get(z, None) for z in raw_lith]
+        valid_mask = [z is not None for z in simplified_zones]
+
+        depth = depth[valid_mask]
+        colors = [combined_zone_colors[simplified_zones[i]] for i, valid in enumerate(valid_mask) if valid]
+
+        dist = np.sqrt((row["E"] - base_coords["E"]) ** 2 + (row["N"] - base_coords["N"]) ** 2)
+
+        ax.scatter(np.full_like(depth, dist), depth, c=colors, marker='_', s=600, linewidths=0.5)
+        ax.text(dist, depth.min() - 1, base_name, ha='center', fontsize=8, rotation=90)
+
+    ax.set_xlabel("Distance from first CPT (m)")
+    ax.set_ylabel("Depth (m)")
+    ax.set_title("Simplified Lithology vs Distance", fontsize=14)
+    ax.invert_yaxis()
+    ax.grid(axis='y')
+
+    # Legend
+    handles = [Line2D([0], [0], color=color, lw=4, label=label)
+               for label, color in combined_zone_colors.items()]
+    ax.legend(handles=handles, title="Merged Zones", bbox_to_anchor=(1.05, 1), loc='upper left')
+
+    plt.tight_layout()
+    plt.savefig(save_path, dpi=300, bbox_inches="tight")
+    plt.close()
+    print(f"[INFO] Saved simplified lithology-by-distance plot → {save_path}")

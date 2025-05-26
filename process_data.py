@@ -267,3 +267,48 @@ def add_measured_vs_data(excel_path, csv_folder_path):
         print(f"[INFO] Added SCPTu data to {file_name}")
 
     print("[INFO] Finished adding SCPTu measured data.")
+
+
+def sort_CPT_by_coordinates(cpt_metadata: str, sort_direction: str = "E-W"):
+    """
+    Reads the CPT metadata from a CSV file and sorts the CPTs based on their coordinates.
+    The user can specify the sorting direction as either
+    "E-W" (East-West) or "W-E" (West-East), N-S (North-South) or S-N (South-North).
+
+    Args:
+        cpt_metadata (str): Path to the CSV file containing CPT metadata.
+        sort_direction (str): Direction to sort the CPTs. Options are "E-W", "W-E", "N-S", "S-N".
+
+    Returns:
+        metadata_ordered (DataFrame): DataFrame containing the sorted CPT metadata with names.
+    """
+    # Read the metadata CSV file
+    metadata_df = pd.read_csv(cpt_metadata)
+
+    # Sort the dataframe based on the specified direction
+    if sort_direction == "E-W":
+        sorted_df = metadata_df.sort_values(by="E", ascending=True)
+    elif sort_direction == "W-E":
+        sorted_df = metadata_df.sort_values(by="E", ascending=False)
+    elif sort_direction == "N-S":
+        sorted_df = metadata_df.sort_values(by="N", ascending=True)
+    elif sort_direction == "S-N":
+        sorted_df = metadata_df.sort_values(by="N", ascending=False)
+    else:
+        raise ValueError("Invalid sort direction. Use 'E-W', 'W-E', 'N-S', or 'S-N'.")
+
+    return sorted_df
+
+def calculate_distance(point1, point2):
+    """
+    Calculate the Euclidean distance between two points in 2D space.
+
+    Args:
+        point1 (tuple): Coordinates of the first point (x1, y1).
+        point2 (tuple): Coordinates of the second point (x2, y2).
+
+    Returns:
+        distance (float): The Euclidean distance between the two points.
+    """
+    distance = np.sqrt((point1.iloc[0] - point2.iloc[0]) ** 2 + (point1.iloc[1] - point2.iloc[1]) ** 2)
+    return distance

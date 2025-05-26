@@ -116,6 +116,7 @@ site_folders = [
     r"c:\Users\camposmo\OneDrive - Stichting Deltares\Desktop\Geotechnical site investigations\results\chavornay",
     r"c:\Users\camposmo\OneDrive - Stichting Deltares\Desktop\Geotechnical site investigations\results\ependes"
 ]
+
 aggregation_method = "mean"  # Can also be 'median' or 'mode'
 
 # === LOAD LAYERING CSV ===
