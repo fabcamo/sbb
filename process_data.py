@@ -187,6 +187,7 @@ def build_interpreted_data(cpt, cpt_dict, vs_results, polygons_L24R10):
 
         'Poisson (Mayne 2007) [-]': cpt.poisson,
 
+        # Note that I divide all by 1000 to convert from Pa to kPa
         'E0 (Robertson and Cabal 2014) [kPa]': vs_results["Robertson"]["E0"] / 1000,
         'E0 (Mayne 2007) [kPa]': vs_results["Mayne"]["E0"] / 1000,
         'E0 (Zhang and Tong 2017) [kPa]': vs_results["Zang"]["E0"] / 1000,

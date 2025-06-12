@@ -5,14 +5,15 @@ from plotting import plot_lithology_and_parameters, plot_lithology_by_distance, 
 from process_data import sort_CPT_by_coordinates, calculate_distance
 
 
-def run_all_plots_for_folder(csv_folder, save_folder, label_dict):
+def run_all_plots_for_folder(data_dict, save_folder, label_dict, layering_df):
     """
     Run all plotting functions for a given folder containing CSV files.
 
     Args:
-        csv_folder (str): Path to the folder containing CSV files.
-        save_folder (str): Path to the folder where plots will be saved.
-        label_dict (dict): Dictionary mapping column names to plot labels.
+        data_dict (dict): Dictionary containing the loaded CSV data.
+        save_folder (str): Folder where the plots will be saved.
+        label_dict (dict): Dictionary containing labels for the plots.
+        layering_df (pd.DataFrame): DataFrame containing layering information.
 
     Returns:
         None
@@ -41,7 +42,9 @@ def run_all_plots_for_folder(csv_folder, save_folder, label_dict):
         ['rho (Lengkeek 2022) [kg/m3]', 'rho_peat (Fig8 Lengkeek 2022) [kg/m3]',
          'rho_Gs (Lengkeek+Robertson 2010) [kg/m3]'],
         ['Su (sbb) [kPa]', 'Su (Nkt_Fr) [kPa]', 'Su (Nkt_Bq) [kPa]'],
-        ['St (sbb) [-]', 'St (Nkt_Fr) [-]', 'St (Nkt_Bq) [-]']
+        ['St (sbb) [-]', 'St (Nkt_Fr) [-]', 'St (Nkt_Bq) [-]'],
+        ['E0 (Robertson and Cabal 2014) [kPa]', 'E0 (Ahmed 2017) [kPa]', 'E0 (Kruiver et al 2020) [kPa]'],
+        ['G0 (Robertson and Cabal 2014) [kPa]', 'G0 (Ahmed 2017) [kPa]', 'G0 (Kruiver et al 2020) [kPa]'],
     ]
     for param_triplet in triple_param_list:
         plot_multi_param_vs_depth(data_dict, param_triplet, save_folder, label_dict)
@@ -65,8 +68,8 @@ def run_all_plots_for_folder(csv_folder, save_folder, label_dict):
 
     # Lithology
     plot_lithology_columns(data_dict, 'lithology (Robertson and Cabal 2010)', 'Depth (sbb) [m]', save_folder)
-    plot_lithology_columns(data_dict, 'lithology (Lengkeek 2024)','Depth (sbb) [m]', save_folder)
-    plot_lithology_columns(data_dict, 'lithology (Lengkeek 2024)','Depth_to_reference [m]', save_folder)
+    plot_lithology_columns(data_dict, 'lithology (Lengkeek 2024)', 'Depth (sbb) [m]', save_folder)
+    plot_lithology_columns(data_dict, 'lithology (Lengkeek 2024)', 'Depth_to_reference [m]', save_folder)
 
     # Composite plots per CPT
     params_to_plot = [
@@ -165,8 +168,6 @@ layering_df = pd.read_csv(layering_csv_path)
 
 folders = [bavois_results_folder, chavornay_results_folder, ependes_results_folder]
 
-
-
 # Load and sort metadata once
 metadata_df = sort_CPT_by_coordinates(metadata_path, "E-W")
 
@@ -181,12 +182,12 @@ for folder in folders:
 
     print(f"\n[INFO] Processing site: {site}")
 
-    # run_all_plots_for_folder(
-    #     data_dict=data_dict,
-    #     save_folder=folder,
-    #     label_dict=plot_labels,
-    #     layering_df=layering_df
-    # )
+    run_all_plots_for_folder(
+        data_dict=data_dict,
+        save_folder=folder,
+        label_dict=plot_labels,
+        layering_df=layering_df
+    )
 
     plot_lithology_by_distance(
         data_dict=data_dict,

@@ -10,8 +10,11 @@ import numpy as np
 def collect_statistics_summary(layer_df: pd.DataFrame, layer_name: str, cpt_name: str, site_name: str) -> list[dict]:
     variables = [
         "rho (Lengkeek 2022) [kg/m3]",
-        "G0 (Ahmed 2017) [MPa]",
-        "Poisson ratio gwl [-]"
+        "Poisson ratio gwl [-]",
+        "E0 (Ahmed 2017) [kPa]",
+        "E0 (Kruiver et al 2020) [kPa]",
+        "E0 (Robertson and Cabal 2014) [kPa]",
+
     ]
 
     summaries = []
@@ -271,42 +274,49 @@ correlation_methods = ["Ahmed 2017", "Kruiver et al 2020", "Robertson and Cabal 
 layering_df = pd.read_csv(layering_csv)
 
 
-
+import re
 # === PROCESS EACH FOLDER ===
 for folder in site_folders:
     site_name = os.path.basename(folder).lower()
     csv_files = glob.glob(os.path.join(folder, "*.csv"))
 
+    # Only compute QC summary once (doesn't depend on correlation)
+    all_qc = []
+
+    for csv_path in csv_files:
+        if "interpreted" not in os.path.basename(csv_path).lower():
+            continue
+
+        _, qc_summary = process_cpt_file(csv_path, layering_df, method=aggregation_method,
+                                         correlation=correlation_methods[0])
+        all_qc.extend(qc_summary)
+
+    # Save the single QC summary
+    if all_qc:
+        qc_df = pd.DataFrame(all_qc)
+        qc_output = os.path.join(folder, f"{site_name}_qc_summary.csv")
+        qc_df.to_csv(qc_output, sep=";", index=False)
+        print(f"[INFO] Saved QC summary → {qc_output}")
+
+    # Now run the correlation loop only for actual E0/G0 stats
     for correlation in correlation_methods:
         all_results = []
-        all_qc = []
 
         for csv_path in csv_files:
             if "interpreted" not in os.path.basename(csv_path).lower():
                 continue
 
-            cpt_results, qc_summary = process_cpt_file(csv_path, layering_df, method=aggregation_method,
-                                                       correlation=correlation)
+            cpt_results, _ = process_cpt_file(csv_path, layering_df, method=aggregation_method, correlation=correlation)
             all_results.extend(cpt_results)
-            all_qc.extend(qc_summary)
-
-        import re
 
         corr_short = re.sub(r'[^a-z0-9_]', '', correlation.lower().replace(" ", "_"))
 
-            # Save regular stats
         if all_results:
             output_df = pd.DataFrame(all_results)
             output_path = os.path.join(folder, f"{site_name}_cpt_statistics_{corr_short}.csv")
             output_df.to_csv(output_path, sep=";", index=False)
             print(f"[INFO] Saved → {output_path}")
 
-        # Save QC summary
-        if all_qc:
-            qc_df = pd.DataFrame(all_qc)
-            qc_output = os.path.join(folder, f"{site_name}_qc_summary_{corr_short}.csv")
-            qc_df.to_csv(qc_output, sep=";", index=False)
-            print(f"[INFO] Saved QC summary → {qc_output}")
 
         else:
             print(f"[WARNING] No results for site '{site_name}' using correlation '{correlation}'")
