@@ -252,14 +252,14 @@ def add_measured_vs_data(excel_path, csv_folder_path):
 
         # Read Z and Vs columns
         df_sdmt = pd.read_excel(excel_path, sheet_name=expected_sheet_name, skiprows=3, usecols="A:B")
-        df_sdmt.columns = ["Z from SCPTu [m/s]", "Vs from SCPTu [m/s]"]  # renamed here
+        df_sdmt.columns = ["Z from SCPTu [m]", "Vs from SCPTu [m/s]"]  # renamed here
 
         # Read existing interpreted CSV
         df_cpt = pd.read_csv(csv_file, encoding="utf-8")
 
         # Add the renamed SCPTu columns
-        df_cpt["Z from SCPTu [m/s]"] = df_sdmt["Z from SCPTu [m/s]"]
-        df_cpt["Vs from SCPTu [m/s]"] = df_sdmt["Vs from SCPTu [m/s]"]
+        df_cpt["Z from SCPTu [m]"] = df_sdmt["Z from SCPTu [m/s]"]
+        df_cpt["Vs from SCPTu [m]"] = df_sdmt["Vs from SCPTu [m/s]"]
 
         # Overwrite original CSV
         df_cpt.to_csv(csv_file, index=False, encoding="utf-8")

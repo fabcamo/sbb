@@ -3,12 +3,9 @@ import glob
 import re
 import numpy as np
 import pandas as pd
+
 import matplotlib.pyplot as plt
-
 from matplotlib.lines import Line2D
-from matplotlib.cm import get_cmap
-
-from process_data import calculate_distance, sort_CPT_by_coordinates
 
 
 def load_all_csvs(csv_folder_path):
@@ -423,16 +420,6 @@ def plot_lithology_and_parameters(data_dict, cpt_id, save_folder, lithology_colu
     print(f"[INFO] Saved horizontal profile for {cpt_id} → {save_path}")
 
 
-import matplotlib.pyplot as plt
-import numpy as np
-from matplotlib.lines import Line2D
-
-
-import os
-import numpy as np
-import matplotlib.pyplot as plt
-from matplotlib.lines import Line2D
-
 def plot_lithology_by_distance(data_dict, metadata_df, depth_column, lithology_column, layering_df, save_path):
     """
     Plot all CPTs in a single subplot with lithology vs depth, spaced by horizontal distance.
@@ -503,8 +490,9 @@ def plot_lithology_by_distance(data_dict, metadata_df, depth_column, lithology_c
     # Format axis
     ax.set_xlabel("Distance from first CPT (m)")
     ax.set_ylabel("Depth (m)")
-    ax.set_title(f"{lithology_column} vs Distance", fontsize=14)
-    #ax.invert_yaxis()
+    site_name = metadata_df['site'].iloc[0]
+    ax.set_title(f"{lithology_column} at site {site_name}", fontsize=14)
+    # ax.invert_yaxis()
     ax.grid(axis='y')
 
     # Legend
@@ -518,11 +506,6 @@ def plot_lithology_by_distance(data_dict, metadata_df, depth_column, lithology_c
     plt.close()
     print(f"[INFO] Saved lithology-by-distance plot → {save_path}")
 
-
-
-import numpy as np
-import matplotlib.pyplot as plt
-from matplotlib.lines import Line2D
 
 def plot_lithology_simple_by_distance(data_dict, metadata_df, depth_column, lithology_column, save_path):
     """
@@ -600,7 +583,7 @@ def plot_lithology_simple_by_distance(data_dict, metadata_df, depth_column, lith
     ax.set_xlabel("Distance from first CPT (m)")
     ax.set_ylabel("Depth (m)")
     ax.set_title("Simplified Lithology vs Distance", fontsize=14)
-    ax.invert_yaxis()
+    #ax.invert_yaxis()
     ax.grid(axis='y')
 
     # Legend
