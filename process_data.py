@@ -187,17 +187,17 @@ def build_interpreted_data(cpt, cpt_dict, vs_results, polygons_L24R10):
 
         'Poisson (Mayne 2007) [-]': cpt.poisson,
 
-        'E0 (Robertson and Cabal 2014) [KPa]': vs_results["Robertson"]["E0"] / 1000,
-        'E0 (Mayne 2007) [KPa]': vs_results["Mayne"]["E0"] / 1000,
-        'E0 (Zhang and Tong 2017) [KPa]': vs_results["Zang"]["E0"] / 1000,
-        'E0 (Ahmed 2017) [KPa]': vs_results["Ahmed"]["E0"] / 1000,
-        'E0 (Kruiver et al 2020) [KPa]': vs_results["Kruiver"]["E0"] / 1000,
+        'E0 (Robertson and Cabal 2014) [kPa]': vs_results["Robertson"]["E0"] / 1000,
+        'E0 (Mayne 2007) [kPa]': vs_results["Mayne"]["E0"] / 1000,
+        'E0 (Zhang and Tong 2017) [kPa]': vs_results["Zang"]["E0"] / 1000,
+        'E0 (Ahmed 2017) [kPa]': vs_results["Ahmed"]["E0"] / 1000,
+        'E0 (Kruiver et al 2020) [kPa]': vs_results["Kruiver"]["E0"] / 1000,
 
-        'G0 (Robertson and Cabal 2014) [KPa]': vs_results["Robertson"]["G0"] / 1000,
-        'G0 (Mayne 2007) [KPa]': vs_results["Mayne"]["G0"] / 1000,
-        'G0 (Zhang and Tong 2017) [KPa]': vs_results["Zang"]["G0"] / 1000,
-        'G0 (Ahmed 2017) [KPa]': vs_results["Ahmed"]["G0"] / 1000,
-        'G0 (Kruiver et al 2020) [KPa]': vs_results["Kruiver"]["G0"] / 1000,
+        'G0 (Robertson and Cabal 2014) [kPa]': vs_results["Robertson"]["G0"] / 1000,
+        'G0 (Mayne 2007) [kPa]': vs_results["Mayne"]["G0"] / 1000,
+        'G0 (Zhang and Tong 2017) [kPa]': vs_results["Zang"]["G0"] / 1000,
+        'G0 (Ahmed 2017) [kPa]': vs_results["Ahmed"]["G0"] / 1000,
+        'G0 (Kruiver et al 2020) [kPa]': vs_results["Kruiver"]["G0"] / 1000,
 
         'Ground water level [m]': cpt.pwp,
         'Poisson ratio gwl [-]': calc_Poisson_below_gwl(cpt),
@@ -258,8 +258,8 @@ def add_measured_vs_data(excel_path, csv_folder_path):
         df_cpt = pd.read_csv(csv_file, encoding="utf-8")
 
         # Add the renamed SCPTu columns
-        df_cpt["Z from SCPTu [m]"] = df_sdmt["Z from SCPTu [m/s]"]
-        df_cpt["Vs from SCPTu [m]"] = df_sdmt["Vs from SCPTu [m/s]"]
+        df_cpt["Z from SCPTu [m]"] = df_sdmt["Z from SCPTu [m]"]
+        df_cpt["Vs from SCPTu [m/s]"] = df_sdmt["Vs from SCPTu [m/s]"]
 
         # Overwrite original CSV
         df_cpt.to_csv(csv_file, index=False, encoding="utf-8")

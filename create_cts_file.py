@@ -4,6 +4,77 @@ import pandas as pd
 import matplotlib.pyplot as plt
 import numpy as np
 
+from scipy.stats import skew
+import numpy as np
+
+def collect_statistics_summary(layer_df: pd.DataFrame, layer_name: str, cpt_name: str, site_name: str) -> list[dict]:
+    variables = [
+        "rho (Lengkeek 2022) [kg/m3]",
+        "G0 (Ahmed 2017) [MPa]",
+        "Poisson ratio gwl [-]"
+    ]
+
+    summaries = []
+
+    for var in variables:
+        if var not in layer_df.columns:
+            continue
+
+        data = layer_df[var].dropna()
+        if data.empty:
+            continue
+
+        n = len(data)
+        mean = data.mean()
+        median = data.median()
+        std = data.std()
+        min_val = data.min()
+        max_val = data.max()
+        skew_val = skew(data)
+        cv = std / mean if mean != 0 else np.nan
+
+        # Outlier detection
+        outliers_std = data[(data > mean + 3*std) | (data < mean - 3*std)]
+        iqr = np.percentile(data, 75) - np.percentile(data, 25)
+        outliers_iqr = data[(data > data.quantile(0.75) + 1.5 * iqr) | (data < data.quantile(0.25) - 1.5 * iqr)]
+
+        # Trust flag logic
+        flags = []
+        if n < 5:
+            flags.append("Unreliable")
+        if abs(mean - median) > 0.3 * std:
+            flags.append("Skewed")
+        if std > 0.5 * mean:
+            flags.append("Noisy")
+        if abs(skew_val) > 1:
+            flags.append("High Skew")
+        if cv > 0.5:
+            flags.append("High CV")
+        if len(outliers_std) > 3 or len(outliers_iqr) > 3:
+            flags.append("Outliers")
+        if not flags:
+            flags.append("OK")
+
+        summaries.append({
+            "Site": site_name,
+            "CPT": cpt_name,
+            "Layer": layer_name,
+            "Variable": var,
+            "n": n,
+            "Mean": round(mean, 2),
+            "Median": round(median, 2),
+            "Std": round(std, 2),
+            "Min": round(min_val, 2),
+            "Max": round(max_val, 2),
+            "Skewness": round(skew_val, 2),
+            "CV": round(cv, 2),
+            "Outliers_std>3": len(outliers_std),
+            "Outliers_IQR": len(outliers_iqr),
+            "Trust_Flag": ", ".join(flags)
+        })
+
+    return summaries
+
 
 
 def get_layer_bounds(layer_string: str, max_depth: float) -> list[tuple[float, float]]:
@@ -128,7 +199,7 @@ def compute_layer_stats(df: pd.DataFrame, top: float, bottom: float, method: str
         raise ValueError(f"Unsupported method: {method}")
 
     # Ensure the correlation column exists and its from the correct options
-    if f"G0 ({correlation}) [MPa]" not in layer_df.columns or f"E0 ({correlation}) [MPa]" not in layer_df.columns:
+    if f"G0 ({correlation}) [kPa]" not in layer_df.columns or f"E0 ({correlation}) [kPa]" not in layer_df.columns:
         raise ValueError(f"Correlation method '{correlation}' not found in layer data.")
     if correlation not in ['Robertson and Cabal 2014', 'Mayne 2007', 'Zhang and Tong 2017', 'Ahmed 2017',
                            'Kruiver et al 2020']:
@@ -140,30 +211,16 @@ def compute_layer_stats(df: pd.DataFrame, top: float, bottom: float, method: str
         "Thickness_std (m)": 0.0,
         "Density (kg/m3)": agg["rho (Lengkeek 2022) [kg/m3]"],
         "Density_std (kg/m3)": layer_df["rho (Lengkeek 2022) [kg/m3]"].std(),
-        "G0 (kPa)": agg[f"G0 ({correlation}) [MPa]"],
-        "G0_std (kPa)": layer_df[f"G0 ({correlation}) [MPa]"].std(),
+        "G0 (kPa)": agg[f"G0 ({correlation}) [kPa]"],
+        "G0_std (kPa)": layer_df[f"G0 ({correlation}) [kPa]"].std(),
         "Poisson (-)": agg["Poisson ratio gwl [-]"],
         "Poisson_std (-)": layer_df["Poisson ratio gwl [-]"].std(),
-        "E0 (kPa)": agg[f"E0 ({correlation}) [MPa]"],
-        "E0_std (kPa)": layer_df[f"E0 ({correlation}) [MPa]"].std(),
+        "E0 (kPa)": agg[f"E0 ({correlation}) [kPa]"],
+        "E0_std (kPa)": layer_df[f"E0 ({correlation}) [kPa]"].std(),
     }
 
 
-def process_cpt_file(csv_path: str, layering_df: pd.DataFrame, method: str = "mean", correlation: str = "Ahmed 2017") -> list[dict]:
-    """
-    Process a single CPT result CSV file, extracting layer statistics based on predefined layering data.
-    This function reads the CSV, extracts the CPT name and site, retrieves the layer boundaries from the layering DataFrame,
-    and computes statistics for each layer.
-
-    Args:
-        csv_path (str): Path to the CPT result CSV file.
-        layering_df (pd.DataFrame): DataFrame containing predefined layer boundaries.
-        method (str, optional): Aggregation method for statistics. One of 'mean', 'median', or 'mode'. Defaults to 'mean'.
-        correlation (str, optional): Correlation method for G0 and E0. Defaults to 'Ahmed 2017'.
-
-    Returns:
-        list[dict]: List of dictionaries containing layer statistics for each layer in the CPT.
-    """
+def process_cpt_file(csv_path: str, layering_df: pd.DataFrame, method: str = "mean", correlation: str = "Ahmed 2017") -> tuple[list[dict], list[dict]]:
     df = pd.read_csv(csv_path)
     cpt_name, site = extract_cpt_id_parts(csv_path)
     max_depth = df["Depth (sbb) [m]"].max()
@@ -174,26 +231,29 @@ def process_cpt_file(csv_path: str, layering_df: pd.DataFrame, method: str = "me
     ]
     if match.empty:
         print(f"[WARNING] No layering data for {cpt_name} at {site}")
-        return []
+        return [], []
 
     layer_bounds = get_layer_bounds(match.iloc[0]["horiz_lines"], max_depth)
     results = []
+    qc_summaries = []
+
     for i, (top, bottom) in enumerate(layer_bounds):
         layer_df = df[(df["Depth (sbb) [m]"] >= top) & (df["Depth (sbb) [m]"] < bottom)]
         layer_name = f"layer{i + 1}"
 
-        # === Quality control boxplot ===
-        check_statistics(layer_df, layer_name, cpt_name, site, save_dir="diagnostics_boxplots")
+        # Add QC summary (skewness, CV, flags)
+        qc_summary_rows = collect_statistics_summary(layer_df, layer_name, cpt_name, site)
+        qc_summaries.extend(qc_summary_rows)
 
-        # === Compute layer statistics ===
+        # Compute layer statistics (mean, std, etc.)
         stats = compute_layer_stats(df, top, bottom, method=method, correlation=correlation)
         results.append({
             "Name": cpt_name,
             "Layer": layer_name,
             **stats
         })
-    return results
 
+    return results, qc_summaries
 
 
 # === USER CONFIG ===
@@ -210,6 +270,8 @@ correlation_methods = ["Ahmed 2017", "Kruiver et al 2020", "Robertson and Cabal 
 # === LOAD LAYERING CSV ===
 layering_df = pd.read_csv(layering_csv)
 
+
+
 # === PROCESS EACH FOLDER ===
 for folder in site_folders:
     site_name = os.path.basename(folder).lower()
@@ -217,21 +279,34 @@ for folder in site_folders:
 
     for correlation in correlation_methods:
         all_results = []
+        all_qc = []
 
         for csv_path in csv_files:
             if "interpreted" not in os.path.basename(csv_path).lower():
-                continue  # Skip non-result files
-            cpt_results = process_cpt_file(csv_path, layering_df, method=aggregation_method, correlation=correlation)
-            all_results.extend(cpt_results)
+                continue
 
+            cpt_results, qc_summary = process_cpt_file(csv_path, layering_df, method=aggregation_method,
+                                                       correlation=correlation)
+            all_results.extend(cpt_results)
+            all_qc.extend(qc_summary)
+
+        import re
+
+        corr_short = re.sub(r'[^a-z0-9_]', '', correlation.lower().replace(" ", "_"))
+
+            # Save regular stats
         if all_results:
             output_df = pd.DataFrame(all_results)
-            corr_short = correlation.lower().replace(" ", "_").replace("and", "").replace(".", "").replace("(",
-                                                                                                           "").replace(
-                ")", "")
-            output_filename = f"{site_name}_cpt_statistics_{corr_short}.csv"
-            output_path = os.path.join(folder, output_filename)
+            output_path = os.path.join(folder, f"{site_name}_cpt_statistics_{corr_short}.csv")
             output_df.to_csv(output_path, sep=";", index=False)
             print(f"[INFO] Saved → {output_path}")
+
+        # Save QC summary
+        if all_qc:
+            qc_df = pd.DataFrame(all_qc)
+            qc_output = os.path.join(folder, f"{site_name}_qc_summary_{corr_short}.csv")
+            qc_df.to_csv(qc_output, sep=";", index=False)
+            print(f"[INFO] Saved QC summary → {qc_output}")
+
         else:
             print(f"[WARNING] No results for site '{site_name}' using correlation '{correlation}'")
